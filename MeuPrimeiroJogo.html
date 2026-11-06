@@ -7,69 +7,123 @@
 <title>Treinador de Mão Esquerda FPS</title>
 
 <style>
+* {
+    box-sizing: border-box;
+}
+
 body {
-    background: #222;
+    background: #dfe3e8;
+    background-image: radial-gradient(#c4cbd3 1px, transparent 1px);
+    background-size: 22px 22px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    height: 100vh;
+    min-height: 100vh;
     margin: 0;
-    font-family: Arial;
-    color: white;
+    font-family: Arial, sans-serif;
+    color: #263445;
 }
 
 h2 {
     margin-bottom: 20px;
+    letter-spacing: 1px;
+    font-size: 25px;
 }
 
 #jogo {
     width: 600px;
     height: 400px;
-    background: #eee;
+    background-color: #f4f6f8;
+    background-image:
+        linear-gradient(rgba(120, 140, 160, 0.09) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(120, 140, 160, 0.09) 1px, transparent 1px);
+    background-size: 30px 30px;
+    border: 2px solid #b5c0cc;
+    border-radius: 12px;
     position: relative;
     overflow: hidden;
+    box-shadow: 0 8px 25px rgba(40, 55, 75, 0.15);
 }
 
 #bola {
     width: 180px;
     height: 180px;
-    background: rgba(0, 150, 255, 0.35);
+    background: rgba(0, 150, 255, 0.25);
     border: 3px solid #008cff;
     border-radius: 50%;
     position: absolute;
     display: flex;
     justify-content: center;
     align-items: center;
-    box-sizing: border-box;
+    transition: background-color 0.25s ease, border-color 0.25s ease;
 }
 
+#bola.dentro {
+    background: rgba(0, 220, 160, 0.30);
+    border-color: #00c995;
+    animation: pulsar 1.2s ease-in-out infinite;
+}
+
+@keyframes pulsar {
+    0%, 100% {
+        box-shadow: 0 0 8px rgba(0, 201, 149, 0.2);
+    }
+    50% {
+        box-shadow: 0 0 24px rgba(0, 201, 149, 0.65);
+    }
+}
+
+/* Jogador: começa como quadrado */
 #jogador {
     width: 30px;
     height: 30px;
-    background: red;
+    background: #f04444;
+    border: 2px solid #a91f2b;
+    border-radius: 5px;
     position: absolute;
     z-index: 2;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+
+    transition: clip-path 0.15s ease, border-radius 0.15s ease;
+}
+
+/* Dentro do círculo: transforma em hexágono */
+#jogador.dentro {
+    border: none;
+    border-radius: 0;
+    clip-path: polygon(
+        25% 0%,
+        75% 0%,
+        100% 50%,
+        75% 100%,
+        25% 100%,
+        0% 50%
+    );
 }
 
 #qte {
-    width: 65px;
-    height: 65px;
-    background: #222;
-    border: 3px solid #ffcc00;
-    border-radius: 12px;
+    min-width: 65px;
+    min-height: 65px;
     display: flex;
     justify-content: center;
     align-items: center;
     color: yellow;
     font-size: 35px;
     font-weight: bold;
-    box-sizing: border-box;
+    background: transparent;
+    border: none;
 }
 
 #status {
-    margin-top: 15px;
-    font-size: 20px;
+    margin-top: 18px;
+    padding: 10px 20px;
+    background: #f4f6f8;
+    border: 1px solid #c3ccd5;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0 3px 8px rgba(40, 55, 75, 0.08);
 }
 </style>
 </head>
@@ -113,26 +167,23 @@ let teclaQTE = "";
 let tempoQTE = 0;
 let proximoQTE = 5;
 
-// Limites da bola: metade pode sair do quadro
 const limiteEsquerdo = -90;
 const limiteDireito = 510;
 const limiteSuperior = -90;
 const limiteInferior = 310;
 
-// Definir um novo padrão de movimento
 function escolherMovimento() {
-
     const movimentos = [
-        { x: 2.5, y: 0 },       // Horizontal direita
-        { x: -2.5, y: 0 },      // Horizontal esquerda
-        { x: 0, y: 2.5 },       // Vertical baixo
-        { x: 0, y: -2.5 },      // Vertical cima
-        { x: 2, y: 1.5 },       // Diagonal
+        { x: 2.5, y: 0 },
+        { x: -2.5, y: 0 },
+        { x: 0, y: 2.5 },
+        { x: 0, y: -2.5 },
+        { x: 2, y: 1.5 },
         { x: -2, y: 1.5 },
         { x: 2, y: -1.5 },
         { x: -2, y: -1.5 },
-        { x: 0, y: 2.5 },       // Recuada para baixo
-        { x: 0, y: -2.5 }       // Recuada para cima
+        { x: 0, y: 2.5 },
+        { x: 0, y: -2.5 }
     ];
 
     const movimento = movimentos[
@@ -142,7 +193,6 @@ function escolherMovimento() {
     velocidadeX = movimento.x;
     velocidadeY = movimento.y;
 
-    // Duração do movimento
     tempoMovimento = 1.5 + Math.random() * 2;
 }
 
@@ -156,7 +206,6 @@ function mostrarQTE(texto, cor) {
 }
 
 document.addEventListener("keydown", function(event) {
-
     teclas[event.key.toLowerCase()] = true;
 
     if ([" ", "Shift"].includes(event.key)) {
@@ -178,14 +227,11 @@ document.addEventListener("keydown", function(event) {
     }
 
     if (teclasQTE.includes(teclaPressionada)) {
-
         if (teclaPressionada === teclaQTE) {
             mostrarQTE("✓", "lightgreen");
-            qte.style.borderColor = "lightgreen";
         }
         else {
             mostrarQTE("✗", "red");
-            qte.style.borderColor = "red";
         }
 
         qteAtivo = false;
@@ -200,14 +246,12 @@ document.addEventListener("keyup", function(event) {
 let anterior = performance.now();
 
 function atualizar() {
-
     const agora = performance.now();
     const delta = Math.min((agora - anterior) / 16.67, 3);
     anterior = agora;
 
     const velocidade = 3 * delta;
 
-    // Movimento do jogador
     if (teclas["d"]) x += velocidade;
     if (teclas["a"]) x -= velocidade;
     if (teclas["w"]) y -= velocidade;
@@ -216,18 +260,15 @@ function atualizar() {
     x = Math.max(0, Math.min(x, 570));
     y = Math.max(0, Math.min(y, 370));
 
-    // Trocar o padrão de movimento da bola
     tempoMovimento -= delta / 60;
 
     if (tempoMovimento <= 0) {
         escolherMovimento();
     }
 
-    // Movimento da bola
     bolaX += velocidadeX * delta;
     bolaY += velocidadeY * delta;
 
-    // Rebater nos limites
     if (bolaX <= limiteEsquerdo) {
         bolaX = limiteEsquerdo;
         velocidadeX = Math.abs(velocidadeX);
@@ -248,7 +289,6 @@ function atualizar() {
         velocidadeY = -Math.abs(velocidadeY);
     }
 
-    // Verificar se o jogador está dentro da bola
     const centroJogadorX = x + 15;
     const centroJogadorY = y + 15;
 
@@ -264,21 +304,25 @@ function atualizar() {
 
     if (dentro) {
         tempo += delta * 16.67 / 1000;
+
         status.textContent = "Dentro da bola: " + tempo.toFixed(1) + "s";
-        status.style.color = "lightgreen";
+        status.style.color = "#009d72";
+
+        bola.classList.add("dentro");
+        jogador.classList.add("dentro");
     }
     else {
         status.textContent = "Você saiu da bola!";
-        status.style.color = "red";
+        status.style.color = "#d93636";
+
+        bola.classList.remove("dentro");
+        jogador.classList.remove("dentro");
     }
 
-    // Quick Time Events
     if (!qteAtivo) {
-
         proximoQTE -= delta / 60;
 
         if (proximoQTE <= 0) {
-
             teclaQTE = teclasQTE[
                 Math.floor(Math.random() * teclasQTE.length)
             ];
@@ -290,18 +334,13 @@ function atualizar() {
                 teclaQTE === "SPACE" ? "␣" : teclaQTE,
                 "yellow"
             );
-
-            qte.style.borderColor = "#ffcc00";
         }
     }
     else {
-
         tempoQTE -= delta / 60;
 
         if (tempoQTE <= 0) {
             mostrarQTE("✗", "red");
-            qte.style.borderColor = "red";
-
             qteAtivo = false;
             proximoQTE = 3;
         }
