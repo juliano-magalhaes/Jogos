@@ -1,0 +1,323 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Treinador de Mão Esquerda FPS</title>
+
+<style>
+body {
+    background: #222;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    font-family: Arial;
+    color: white;
+}
+
+h2 {
+    margin-bottom: 20px;
+}
+
+#jogo {
+    width: 600px;
+    height: 400px;
+    background: #eee;
+    position: relative;
+    overflow: hidden;
+}
+
+#bola {
+    width: 180px;
+    height: 180px;
+    background: rgba(0, 150, 255, 0.35);
+    border: 3px solid #008cff;
+    border-radius: 50%;
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+}
+
+#jogador {
+    width: 30px;
+    height: 30px;
+    background: red;
+    position: absolute;
+    z-index: 2;
+}
+
+#qte {
+    width: 65px;
+    height: 65px;
+    background: #222;
+    border: 3px solid #ffcc00;
+    border-radius: 12px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: yellow;
+    font-size: 35px;
+    font-weight: bold;
+    box-sizing: border-box;
+}
+
+#status {
+    margin-top: 15px;
+    font-size: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Treinador de Mão Esquerda FPS</h2>
+
+<div id="jogo">
+    <div id="bola">
+        <div id="qte">?</div>
+    </div>
+    <div id="jogador"></div>
+</div>
+
+<div id="status">Dentro da bola: 0.0s</div>
+
+<script>
+const jogador = document.getElementById("jogador");
+const bola = document.getElementById("bola");
+const status = document.getElementById("status");
+const qte = document.getElementById("qte");
+
+let x = 285;
+let y = 185;
+
+let bolaX = 210;
+let bolaY = 110;
+
+let velocidadeX = 0;
+let velocidadeY = 0;
+
+const teclas = {};
+
+let tempo = 0;
+
+const teclasQTE = ["SHIFT", "Q", "E", "SPACE", "R"];
+
+let qteAtivo = false;
+let teclaQTE = "";
+let tempoQTE = 0;
+let proximoQTE = 5;
+
+// Limites da bola: metade pode sair do quadro
+const limiteEsquerdo = -90;
+const limiteDireito = 510;
+const limiteSuperior = -90;
+const limiteInferior = 310;
+
+// Definir um novo padrão de movimento
+function escolherMovimento() {
+
+    const movimentos = [
+        { x: 2.5, y: 0 },       // Horizontal direita
+        { x: -2.5, y: 0 },      // Horizontal esquerda
+        { x: 0, y: 2.5 },       // Vertical baixo
+        { x: 0, y: -2.5 },      // Vertical cima
+        { x: 2, y: 1.5 },       // Diagonal
+        { x: -2, y: 1.5 },
+        { x: 2, y: -1.5 },
+        { x: -2, y: -1.5 },
+        { x: 0, y: 2.5 },       // Recuada para baixo
+        { x: 0, y: -2.5 }       // Recuada para cima
+    ];
+
+    const movimento = movimentos[
+        Math.floor(Math.random() * movimentos.length)
+    ];
+
+    velocidadeX = movimento.x;
+    velocidadeY = movimento.y;
+
+    // Duração do movimento
+    tempoMovimento = 1.5 + Math.random() * 2;
+}
+
+let tempoMovimento = 0;
+
+escolherMovimento();
+
+function mostrarQTE(texto, cor) {
+    qte.textContent = texto;
+    qte.style.color = cor;
+}
+
+document.addEventListener("keydown", function(event) {
+
+    teclas[event.key.toLowerCase()] = true;
+
+    if ([" ", "Shift"].includes(event.key)) {
+        event.preventDefault();
+    }
+
+    if (!qteAtivo || event.repeat) return;
+
+    let teclaPressionada = "";
+
+    if (event.code === "ShiftLeft" || event.code === "ShiftRight") {
+        teclaPressionada = "SHIFT";
+    }
+    else if (event.code === "Space") {
+        teclaPressionada = "SPACE";
+    }
+    else {
+        teclaPressionada = event.key.toUpperCase();
+    }
+
+    if (teclasQTE.includes(teclaPressionada)) {
+
+        if (teclaPressionada === teclaQTE) {
+            mostrarQTE("✓", "lightgreen");
+            qte.style.borderColor = "lightgreen";
+        }
+        else {
+            mostrarQTE("✗", "red");
+            qte.style.borderColor = "red";
+        }
+
+        qteAtivo = false;
+        proximoQTE = 3;
+    }
+});
+
+document.addEventListener("keyup", function(event) {
+    teclas[event.key.toLowerCase()] = false;
+});
+
+let anterior = performance.now();
+
+function atualizar() {
+
+    const agora = performance.now();
+    const delta = Math.min((agora - anterior) / 16.67, 3);
+    anterior = agora;
+
+    const velocidade = 3 * delta;
+
+    // Movimento do jogador
+    if (teclas["d"]) x += velocidade;
+    if (teclas["a"]) x -= velocidade;
+    if (teclas["w"]) y -= velocidade;
+    if (teclas["s"]) y += velocidade;
+
+    x = Math.max(0, Math.min(x, 570));
+    y = Math.max(0, Math.min(y, 370));
+
+    // Trocar o padrão de movimento da bola
+    tempoMovimento -= delta / 60;
+
+    if (tempoMovimento <= 0) {
+        escolherMovimento();
+    }
+
+    // Movimento da bola
+    bolaX += velocidadeX * delta;
+    bolaY += velocidadeY * delta;
+
+    // Rebater nos limites
+    if (bolaX <= limiteEsquerdo) {
+        bolaX = limiteEsquerdo;
+        velocidadeX = Math.abs(velocidadeX);
+    }
+
+    if (bolaX >= limiteDireito) {
+        bolaX = limiteDireito;
+        velocidadeX = -Math.abs(velocidadeX);
+    }
+
+    if (bolaY <= limiteSuperior) {
+        bolaY = limiteSuperior;
+        velocidadeY = Math.abs(velocidadeY);
+    }
+
+    if (bolaY >= limiteInferior) {
+        bolaY = limiteInferior;
+        velocidadeY = -Math.abs(velocidadeY);
+    }
+
+    // Verificar se o jogador está dentro da bola
+    const centroJogadorX = x + 15;
+    const centroJogadorY = y + 15;
+
+    const centroBolaX = bolaX + 90;
+    const centroBolaY = bolaY + 90;
+
+    const distancia = Math.hypot(
+        centroJogadorX - centroBolaX,
+        centroJogadorY - centroBolaY
+    );
+
+    const dentro = distancia <= 68;
+
+    if (dentro) {
+        tempo += delta * 16.67 / 1000;
+        status.textContent = "Dentro da bola: " + tempo.toFixed(1) + "s";
+        status.style.color = "lightgreen";
+    }
+    else {
+        status.textContent = "Você saiu da bola!";
+        status.style.color = "red";
+    }
+
+    // Quick Time Events
+    if (!qteAtivo) {
+
+        proximoQTE -= delta / 60;
+
+        if (proximoQTE <= 0) {
+
+            teclaQTE = teclasQTE[
+                Math.floor(Math.random() * teclasQTE.length)
+            ];
+
+            qteAtivo = true;
+            tempoQTE = 2.5;
+
+            mostrarQTE(
+                teclaQTE === "SPACE" ? "␣" : teclaQTE,
+                "yellow"
+            );
+
+            qte.style.borderColor = "#ffcc00";
+        }
+    }
+    else {
+
+        tempoQTE -= delta / 60;
+
+        if (tempoQTE <= 0) {
+            mostrarQTE("✗", "red");
+            qte.style.borderColor = "red";
+
+            qteAtivo = false;
+            proximoQTE = 3;
+        }
+    }
+
+    jogador.style.left = x + "px";
+    jogador.style.top = y + "px";
+
+    bola.style.left = bolaX + "px";
+    bola.style.top = bolaY + "px";
+
+    requestAnimationFrame(atualizar);
+}
+
+atualizar();
+</script>
+
+</body>
+</html>
