@@ -15,10 +15,12 @@ body {
     background: #dfe3e8;
     background-image: radial-gradient(#c4cbd3 1px, transparent 1px);
     background-size: 22px 22px;
+
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
+
     min-height: 100vh;
     margin: 0;
     font-family: Arial, sans-serif;
@@ -31,32 +33,75 @@ h2 {
     font-size: 25px;
 }
 
+#containerJogo {
+    width: 600px;
+    position: relative;
+}
+
+#painel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    width: 600px;
+    margin-bottom: 12px;
+    padding: 12px 18px;
+
+    background: #f4f6f8;
+    border: 1px solid #c3ccd5;
+    border-radius: 8px;
+
+    font-size: 18px;
+    font-weight: bold;
+    box-shadow: 0 3px 8px rgba(40, 55, 75, 0.08);
+}
+
+#pontuacao {
+    color: #008cff;
+}
+
+#vidas {
+    color: #d93636;
+    letter-spacing: 3px;
+}
+
 #jogo {
     width: 600px;
     height: 400px;
+
     background-color: #f4f6f8;
     background-image:
         linear-gradient(rgba(120, 140, 160, 0.09) 1px, transparent 1px),
         linear-gradient(90deg, rgba(120, 140, 160, 0.09) 1px, transparent 1px);
+
     background-size: 30px 30px;
+
     border: 2px solid #b5c0cc;
     border-radius: 12px;
+
     position: relative;
     overflow: hidden;
+
     box-shadow: 0 8px 25px rgba(40, 55, 75, 0.15);
 }
 
 #bola {
     width: 180px;
     height: 180px;
+
     background: rgba(0, 150, 255, 0.25);
     border: 3px solid #008cff;
     border-radius: 50%;
+
     position: absolute;
+
     display: flex;
     justify-content: center;
     align-items: center;
-    transition: background-color 0.25s ease, border-color 0.25s ease;
+
+    transition:
+        background-color 0.25s ease,
+        border-color 0.25s ease;
 }
 
 #bola.dentro {
@@ -69,29 +114,36 @@ h2 {
     0%, 100% {
         box-shadow: 0 0 8px rgba(0, 201, 149, 0.2);
     }
+
     50% {
         box-shadow: 0 0 24px rgba(0, 201, 149, 0.65);
     }
 }
 
-/* Jogador: começa como quadrado */
+/* Jogador: quadrado quando está fora */
 #jogador {
     width: 30px;
     height: 30px;
+
     background: #f04444;
     border: 2px solid #a91f2b;
     border-radius: 5px;
+
     position: absolute;
     z-index: 2;
+
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 
-    transition: clip-path 0.15s ease, border-radius 0.15s ease;
+    transition:
+        clip-path 0.15s ease,
+        border-radius 0.15s ease;
 }
 
-/* Dentro do círculo: transforma em hexágono */
+/* Jogador: hexágono quando está dentro */
 #jogador.dentro {
     border: none;
     border-radius: 0;
+
     clip-path: polygon(
         25% 0%,
         75% 0%,
@@ -102,28 +154,128 @@ h2 {
     );
 }
 
+/* Tecla do desafio */
 #qte {
     min-width: 65px;
     min-height: 65px;
+
     display: flex;
     justify-content: center;
     align-items: center;
-    color: yellow;
+
+    color: #008cff;
     font-size: 35px;
     font-weight: bold;
+
     background: transparent;
     border: none;
 }
 
 #status {
-    margin-top: 18px;
+    width: 600px;
+    margin-top: 15px;
     padding: 10px 20px;
+
     background: #f4f6f8;
     border: 1px solid #c3ccd5;
     border-radius: 8px;
-    font-size: 18px;
+
+    font-size: 16px;
     font-weight: bold;
+    text-align: center;
+
     box-shadow: 0 3px 8px rgba(40, 55, 75, 0.08);
+}
+
+/* Tela de fim de jogo */
+#telaFim {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+
+    display: none;
+    justify-content: center;
+    align-items: center;
+
+    background: rgba(25, 37, 52, 0.78);
+    border-radius: 12px;
+    backdrop-filter: blur(4px);
+}
+
+#telaFim.visivel {
+    display: flex;
+}
+
+#menuResultados {
+    width: 340px;
+    padding: 28px;
+
+    background: #f4f6f8;
+    border: 1px solid #c3ccd5;
+    border-radius: 14px;
+
+    text-align: center;
+
+    box-shadow: 0 10px 35px rgba(0, 0, 0, 0.25);
+}
+
+#menuResultados h3 {
+    margin: 0 0 8px;
+    font-size: 26px;
+    color: #263445;
+}
+
+#menuResultados p {
+    margin: 0 0 22px;
+    color: #718096;
+    font-size: 14px;
+}
+
+.resultado {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 13px 10px;
+    margin-bottom: 10px;
+
+    background: #e6ebf0;
+    border-radius: 8px;
+
+    font-size: 16px;
+    font-weight: bold;
+}
+
+.valorResultado {
+    color: #008cff;
+    font-size: 19px;
+}
+
+#botaoReiniciar {
+    width: 100%;
+    margin-top: 12px;
+    padding: 13px;
+
+    background: #008cff;
+    color: white;
+
+    border: none;
+    border-radius: 8px;
+
+    font-size: 16px;
+    font-weight: bold;
+
+    cursor: pointer;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+#botaoReiniciar:hover {
+    background: #0072d1;
+    transform: translateY(-2px);
+}
+
+#botaoReiniciar:active {
+    transform: translateY(0);
 }
 </style>
 </head>
@@ -132,14 +284,48 @@ h2 {
 
 <h2>Treinador de Mão Esquerda FPS</h2>
 
-<div id="jogo">
-    <div id="bola">
-        <div id="qte">?</div>
-    </div>
-    <div id="jogador"></div>
-</div>
+<div id="containerJogo">
 
-<div id="status">Dentro da bola: 0.0s</div>
+    <div id="painel">
+        <div id="pontuacao">Pontos: 0</div>
+        <div id="vidas">♥ ♥ ♥</div>
+    </div>
+
+    <div id="jogo">
+        <div id="bola">
+            <div id="qte">?</div>
+        </div>
+
+        <div id="jogador"></div>
+    </div>
+
+    <div id="status">Mantenha-se dentro da bola!</div>
+
+    <!-- Menu de resultados -->
+    <div id="telaFim">
+        <div id="menuResultados">
+
+            <h3>Fim de jogo!</h3>
+            <p>Confira seu desempenho</p>
+
+            <div class="resultado">
+                <span>Pontuação</span>
+                <span class="valorResultado" id="resultadoPontos">0</span>
+            </div>
+
+            <div class="resultado">
+                <span>Tempo dentro</span>
+                <span class="valorResultado" id="resultadoTempo">0.0s</span>
+            </div>
+
+            <button id="botaoReiniciar" onclick="reiniciarJogo()">
+                Jogar novamente
+            </button>
+
+        </div>
+    </div>
+
+</div>
 
 <script>
 const jogador = document.getElementById("jogador");
@@ -147,9 +333,18 @@ const bola = document.getElementById("bola");
 const status = document.getElementById("status");
 const qte = document.getElementById("qte");
 
+const pontuacaoElemento = document.getElementById("pontuacao");
+const vidasElemento = document.getElementById("vidas");
+
+const telaFim = document.getElementById("telaFim");
+const resultadoPontos = document.getElementById("resultadoPontos");
+const resultadoTempo = document.getElementById("resultadoTempo");
+
+/* Posição do jogador */
 let x = 285;
 let y = 185;
 
+/* Posição da bola */
 let bolaX = 210;
 let bolaY = 110;
 
@@ -158,20 +353,34 @@ let velocidadeY = 0;
 
 const teclas = {};
 
-let tempo = 0;
+/* Pontuação e vidas */
+let pontuacao = 0;
+let vidas = 3;
 
-const teclasQTE = ["SHIFT", "Q", "E", "SPACE", "R"];
+/* Tempo acumulado dentro da bola */
+let tempoDentro = 0;
+
+/* Estado do jogo */
+let dentro = false;
+let fimDeJogo = false;
+
+/* Sistema de QTE */
+const teclasQTE = ["SHIFT", "Q", "R", "SPACE"];
 
 let qteAtivo = false;
 let teclaQTE = "";
 let tempoQTE = 0;
 let proximoQTE = 5;
 
-const limiteEsquerdo = -90;
-const limiteDireito = 510;
-const limiteSuperior = -90;
-const limiteInferior = 310;
+/* Limites da bola */
+const limiteEsquerdo = -25;
+const limiteDireito = 445;
+const limiteSuperior = -25;
+const limiteInferior = 245;
 
+let tempoMovimento = 0;
+
+/* Escolhe o movimento da bola */
 function escolherMovimento() {
     const movimentos = [
         { x: 2.5, y: 0 },
@@ -196,15 +405,79 @@ function escolherMovimento() {
     tempoMovimento = 1.5 + Math.random() * 2;
 }
 
-let tempoMovimento = 0;
-
 escolherMovimento();
 
+/* Mostra uma tecla ou símbolo */
 function mostrarQTE(texto, cor) {
     qte.textContent = texto;
     qte.style.color = cor;
 }
 
+/* Atualiza o painel */
+function atualizarPainel() {
+    pontuacaoElemento.textContent = "Pontos: " + pontuacao;
+
+    vidasElemento.textContent = "♥ ".repeat(vidas).trim();
+}
+
+/* Formata o tempo em segundos */
+function formatarTempo(segundos) {
+    return segundos.toFixed(1) + "s";
+}
+
+/* Exibe os resultados e encerra a partida */
+function encerrarJogo() {
+    fimDeJogo = true;
+
+    resultadoPontos.textContent = pontuacao;
+    resultadoTempo.textContent = formatarTempo(tempoDentro);
+
+    telaFim.classList.add("visivel");
+}
+
+/* Perde uma vida */
+function perderVida() {
+    vidas--;
+
+    atualizarPainel();
+
+    if (vidas <= 0) {
+        encerrarJogo();
+    }
+}
+
+/* Escolhe uma tecla respeitando a direção da bola */
+function iniciarQTE() {
+    let teclasDisponiveis = [...teclasQTE];
+
+    // Bola indo para a direita: R não aparece
+    if (velocidadeX > 0) {
+        teclasDisponiveis = teclasDisponiveis.filter(
+            tecla => tecla !== "R"
+        );
+    }
+
+    // Bola indo para a esquerda: Q não aparece
+    if (velocidadeX < 0) {
+        teclasDisponiveis = teclasDisponiveis.filter(
+            tecla => tecla !== "Q"
+        );
+    }
+
+    teclaQTE = teclasDisponiveis[
+        Math.floor(Math.random() * teclasDisponiveis.length)
+    ];
+
+    qteAtivo = true;
+    tempoQTE = 2.5;
+
+    mostrarQTE(
+        teclaQTE === "SPACE" ? "␣" : teclaQTE,
+        dentro ? "#00c995" : "#008cff"
+    );
+}
+
+/* Teclas pressionadas */
 document.addEventListener("keydown", function(event) {
     teclas[event.key.toLowerCase()] = true;
 
@@ -212,7 +485,7 @@ document.addEventListener("keydown", function(event) {
         event.preventDefault();
     }
 
-    if (!qteAtivo || event.repeat) return;
+    if (fimDeJogo || !qteAtivo || event.repeat) return;
 
     let teclaPressionada = "";
 
@@ -227,11 +500,41 @@ document.addEventListener("keydown", function(event) {
     }
 
     if (teclasQTE.includes(teclaPressionada)) {
+
         if (teclaPressionada === teclaQTE) {
-            mostrarQTE("✓", "lightgreen");
+
+            if (dentro) {
+                pontuacao++;
+
+                pontuacaoElemento.textContent =
+                    "Pontos: " + pontuacao;
+
+                mostrarQTE("✓", "#00c995");
+
+                status.textContent = "Boa! +1 ponto!";
+                status.style.color = "#009d72";
+            }
+            else {
+                mostrarQTE("✓", "#008cff");
+
+                status.textContent =
+                    "Tecla certa, mas você estava fora da bola!";
+
+                status.style.color = "#d93636";
+            }
+
         }
         else {
-            mostrarQTE("✗", "red");
+            mostrarQTE("✗", "#d93636");
+
+            perderVida();
+
+            if (!fimDeJogo) {
+                status.textContent =
+                    "Tecla errada! Você perdeu uma vida.";
+
+                status.style.color = "#d93636";
+            }
         }
 
         qteAtivo = false;
@@ -239,19 +542,86 @@ document.addEventListener("keydown", function(event) {
     }
 });
 
+/* Soltar as teclas */
 document.addEventListener("keyup", function(event) {
     teclas[event.key.toLowerCase()] = false;
 });
 
+/* Reinicia todos os elementos da partida */
+function reiniciarJogo() {
+    x = 285;
+    y = 185;
+
+    bolaX = 210;
+    bolaY = 110;
+
+    velocidadeX = 0;
+    velocidadeY = 0;
+
+    pontuacao = 0;
+    vidas = 3;
+    tempoDentro = 0;
+
+    dentro = false;
+    fimDeJogo = false;
+
+    qteAtivo = false;
+    teclaQTE = "";
+    tempoQTE = 0;
+    proximoQTE = 5;
+
+    tempoMovimento = 0;
+
+    // Limpa as teclas que estavam pressionadas
+    for (const tecla in teclas) {
+        teclas[tecla] = false;
+    }
+
+    // Restaura a aparência
+    jogador.classList.remove("dentro");
+    bola.classList.remove("dentro");
+
+    mostrarQTE("?", "#008cff");
+
+    jogador.style.left = x + "px";
+    jogador.style.top = y + "px";
+
+    bola.style.left = bolaX + "px";
+    bola.style.top = bolaY + "px";
+
+    status.textContent = "Mantenha-se dentro da bola!";
+    status.style.color = "#263445";
+
+    atualizarPainel();
+
+    // Esconde o menu
+    telaFim.classList.remove("visivel");
+
+    // Sorteia o primeiro movimento
+    escolherMovimento();
+
+    // Reinicia o relógio para evitar saltos no movimento
+    anterior = performance.now();
+
+    // Começa uma nova partida
+    atualizar();
+}
+
+/* Loop principal */
 let anterior = performance.now();
 
 function atualizar() {
+    if (fimDeJogo) return;
+
     const agora = performance.now();
     const delta = Math.min((agora - anterior) / 16.67, 3);
+
     anterior = agora;
 
+    const deltaSegundos = delta * 16.67 / 1000;
     const velocidade = 3 * delta;
 
+    /* Movimento do jogador */
     if (teclas["d"]) x += velocidade;
     if (teclas["a"]) x -= velocidade;
     if (teclas["w"]) y -= velocidade;
@@ -260,6 +630,7 @@ function atualizar() {
     x = Math.max(0, Math.min(x, 570));
     y = Math.max(0, Math.min(y, 370));
 
+    /* Movimento da bola */
     tempoMovimento -= delta / 60;
 
     if (tempoMovimento <= 0) {
@@ -289,70 +660,96 @@ function atualizar() {
         velocidadeY = -Math.abs(velocidadeY);
     }
 
-    const centroJogadorX = x + 15;
-    const centroJogadorY = y + 15;
+    /* Verifica se qualquer parte do jogador está dentro da bola */
 
     const centroBolaX = bolaX + 90;
     const centroBolaY = bolaY + 90;
 
-    const distancia = Math.hypot(
-        centroJogadorX - centroBolaX,
-        centroJogadorY - centroBolaY
+    const pontoMaisProximoX = Math.max(
+        x,
+        Math.min(centroBolaX, x + 30)
     );
 
-    const dentro = distancia <= 68;
+    const pontoMaisProximoY = Math.max(
+        y,
+        Math.min(centroBolaY, y + 30)
+    );
 
+    const distancia = Math.hypot(
+        centroBolaX - pontoMaisProximoX,
+        centroBolaY - pontoMaisProximoY
+    );
+
+    dentro = distancia <= 87;
+
+    /* Conta o tempo dentro da bola */
     if (dentro) {
-        tempo += delta * 16.67 / 1000;
+        tempoDentro += deltaSegundos;
+    }
 
-        status.textContent = "Dentro da bola: " + tempo.toFixed(1) + "s";
-        status.style.color = "#009d72";
-
+    /* Aparência e status */
+    if (dentro) {
         bola.classList.add("dentro");
         jogador.classList.add("dentro");
+
+        if (!qteAtivo) {
+            status.textContent = "Você está dentro da bola!";
+            status.style.color = "#009d72";
+        }
     }
     else {
-        status.textContent = "Você saiu da bola!";
-        status.style.color = "#d93636";
-
         bola.classList.remove("dentro");
         jogador.classList.remove("dentro");
+
+        if (!qteAtivo) {
+            status.textContent = "Você saiu da bola!";
+            status.style.color = "#d93636";
+        }
     }
 
+    /* Cor da tecla acompanha a borda da bola */
+    if (qteAtivo) {
+        qte.style.color = dentro ? "#00c995" : "#008cff";
+    }
+
+    /* Sistema de desafios */
     if (!qteAtivo) {
         proximoQTE -= delta / 60;
 
         if (proximoQTE <= 0) {
-            teclaQTE = teclasQTE[
-                Math.floor(Math.random() * teclasQTE.length)
-            ];
-
-            qteAtivo = true;
-            tempoQTE = 2.5;
-
-            mostrarQTE(
-                teclaQTE === "SPACE" ? "␣" : teclaQTE,
-                "yellow"
-            );
+            iniciarQTE();
         }
     }
     else {
-        tempoQTE -= delta / 60;
+        tempoQTE -= deltaSegundos;
 
         if (tempoQTE <= 0) {
-            mostrarQTE("✗", "red");
+            mostrarQTE("✗", "#d93636");
+
+            perderVida();
+
+            if (!fimDeJogo) {
+                status.textContent =
+                    "Tempo esgotado! Você perdeu uma vida.";
+
+                status.style.color = "#d93636";
+            }
+
             qteAtivo = false;
             proximoQTE = 3;
         }
     }
 
+    /* Atualiza posições na tela */
     jogador.style.left = x + "px";
     jogador.style.top = y + "px";
 
     bola.style.left = bolaX + "px";
     bola.style.top = bolaY + "px";
 
-    requestAnimationFrame(atualizar);
+    if (!fimDeJogo) {
+        requestAnimationFrame(atualizar);
+    }
 }
 
 atualizar();

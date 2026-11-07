@@ -1,0 +1,411 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Treinador de Mão Esquerda FPS</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    background: #dfe3e8;
+    background-image: radial-gradient(#c4cbd3 1px, transparent 1px);
+    background-size: 22px 22px;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    min-height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    color: #263445;
+}
+
+h2 {
+    margin-bottom: 20px;
+    letter-spacing: 1px;
+    font-size: 25px;
+}
+
+#jogo {
+    width: 600px;
+    height: 400px;
+    background-color: #f4f6f8;
+
+    background-image:
+        linear-gradient(rgba(120, 140, 160, 0.09) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(120, 140, 160, 0.09) 1px, transparent 1px);
+
+    background-size: 30px 30px;
+
+    border: 2px solid #b5c0cc;
+    border-radius: 12px;
+
+    position: relative;
+    overflow: hidden;
+
+    box-shadow: 0 8px 25px rgba(40, 55, 75, 0.15);
+}
+
+#bola {
+    width: 180px;
+    height: 180px;
+
+    background: rgba(0, 150, 255, 0.25);
+    border: 3px solid #008cff;
+    border-radius: 50%;
+
+    position: absolute;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    transition:
+        background-color 0.25s ease,
+        border-color 0.25s ease;
+}
+
+#bola.dentro {
+    background: rgba(0, 220, 160, 0.30);
+    border-color: #00c995;
+    animation: pulsar 1.2s ease-in-out infinite;
+}
+
+@keyframes pulsar {
+    0%, 100% {
+        box-shadow: 0 0 8px rgba(0, 201, 149, 0.2);
+    }
+
+    50% {
+        box-shadow: 0 0 24px rgba(0, 201, 149, 0.65);
+    }
+}
+
+/* Jogador: quadrado quando está fora */
+#jogador {
+    width: 30px;
+    height: 30px;
+
+    background: #f04444;
+    border: 2px solid #a91f2b;
+    border-radius: 5px;
+
+    position: absolute;
+    z-index: 2;
+
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+
+    transition:
+        clip-path 0.15s ease,
+        border-radius 0.15s ease;
+}
+
+/* Jogador: hexágono quando está dentro */
+#jogador.dentro {
+    border: none;
+    border-radius: 0;
+
+    clip-path: polygon(
+        25% 0%,
+        75% 0%,
+        100% 50%,
+        75% 100%,
+        25% 100%,
+        0% 50%
+    );
+}
+
+/* Tecla sem fundo */
+#qte {
+    min-width: 65px;
+    min-height: 65px;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    color: #008cff;
+    font-size: 35px;
+    font-weight: bold;
+
+    background: transparent;
+    border: none;
+}
+
+#status {
+    margin-top: 18px;
+    padding: 10px 20px;
+
+    background: #f4f6f8;
+    border: 1px solid #c3ccd5;
+    border-radius: 8px;
+
+    font-size: 18px;
+    font-weight: bold;
+
+    box-shadow: 0 3px 8px rgba(40, 55, 75, 0.08);
+}
+</style>
+</head>
+
+<body>
+
+<h2>Treinador de Mão Esquerda FPS</h2>
+
+<div id="jogo">
+    <div id="bola">
+        <div id="qte">?</div>
+    </div>
+
+    <div id="jogador"></div>
+</div>
+
+<div id="status">Dentro da bola: 0.0s</div>
+
+<script>
+const jogador = document.getElementById("jogador");
+const bola = document.getElementById("bola");
+const status = document.getElementById("status");
+const qte = document.getElementById("qte");
+
+let x = 285;
+let y = 185;
+
+let bolaX = 210;
+let bolaY = 110;
+
+let velocidadeX = 0;
+let velocidadeY = 0;
+
+const teclas = {};
+
+let tempo = 0;
+
+const teclasQTE = ["SHIFT", "Q", "E", "SPACE", "R"];
+
+let qteAtivo = false;
+let teclaQTE = "";
+let tempoQTE = 0;
+let proximoQTE = 5;
+
+/* A bola agora só pode sair 25 pixels da área */
+const limiteEsquerdo = -25;
+const limiteDireito = 445;
+const limiteSuperior = -25;
+const limiteInferior = 245;
+
+function escolherMovimento() {
+    const movimentos = [
+        { x: 2.5, y: 0 },
+        { x: -2.5, y: 0 },
+        { x: 0, y: 2.5 },
+        { x: 0, y: -2.5 },
+        { x: 2, y: 1.5 },
+        { x: -2, y: 1.5 },
+        { x: 2, y: -1.5 },
+        { x: -2, y: -1.5 },
+        { x: 0, y: 2.5 },
+        { x: 0, y: -2.5 }
+    ];
+
+    const movimento = movimentos[
+        Math.floor(Math.random() * movimentos.length)
+    ];
+
+    velocidadeX = movimento.x;
+    velocidadeY = movimento.y;
+
+    tempoMovimento = 1.5 + Math.random() * 2;
+}
+
+let tempoMovimento = 0;
+
+escolherMovimento();
+
+function mostrarQTE(texto, cor) {
+    qte.textContent = texto;
+    qte.style.color = cor;
+}
+
+document.addEventListener("keydown", function(event) {
+    teclas[event.key.toLowerCase()] = true;
+
+    if ([" ", "Shift"].includes(event.key)) {
+        event.preventDefault();
+    }
+
+    if (!qteAtivo || event.repeat) return;
+
+    let teclaPressionada = "";
+
+    if (event.code === "ShiftLeft" || event.code === "ShiftRight") {
+        teclaPressionada = "SHIFT";
+    }
+    else if (event.code === "Space") {
+        teclaPressionada = "SPACE";
+    }
+    else {
+        teclaPressionada = event.key.toUpperCase();
+    }
+
+    if (teclasQTE.includes(teclaPressionada)) {
+        if (teclaPressionada === teclaQTE) {
+            mostrarQTE("✓", "lightgreen");
+        }
+        else {
+            mostrarQTE("✗", "red");
+        }
+
+        qteAtivo = false;
+        proximoQTE = 3;
+    }
+});
+
+document.addEventListener("keyup", function(event) {
+    teclas[event.key.toLowerCase()] = false;
+});
+
+let anterior = performance.now();
+
+function atualizar() {
+    const agora = performance.now();
+    const delta = Math.min((agora - anterior) / 16.67, 3);
+    anterior = agora;
+
+    const velocidade = 3 * delta;
+
+    /* Movimento do jogador */
+    if (teclas["d"]) x += velocidade;
+    if (teclas["a"]) x -= velocidade;
+    if (teclas["w"]) y -= velocidade;
+    if (teclas["s"]) y += velocidade;
+
+    x = Math.max(0, Math.min(x, 570));
+    y = Math.max(0, Math.min(y, 370));
+
+    /* Movimento da bola */
+    tempoMovimento -= delta / 60;
+
+    if (tempoMovimento <= 0) {
+        escolherMovimento();
+    }
+
+    bolaX += velocidadeX * delta;
+    bolaY += velocidadeY * delta;
+
+    if (bolaX <= limiteEsquerdo) {
+        bolaX = limiteEsquerdo;
+        velocidadeX = Math.abs(velocidadeX);
+    }
+
+    if (bolaX >= limiteDireito) {
+        bolaX = limiteDireito;
+        velocidadeX = -Math.abs(velocidadeX);
+    }
+
+    if (bolaY <= limiteSuperior) {
+        bolaY = limiteSuperior;
+        velocidadeY = Math.abs(velocidadeY);
+    }
+
+    if (bolaY >= limiteInferior) {
+        bolaY = limiteInferior;
+        velocidadeY = -Math.abs(velocidadeY);
+    }
+
+    /* Verifica se qualquer parte do quadrado está dentro da bola */
+
+    const centroBolaX = bolaX + 90;
+    const centroBolaY = bolaY + 90;
+
+    // Encontra o ponto do quadrado mais próximo do centro da bola
+    const pontoMaisProximoX = Math.max(
+        x,
+        Math.min(centroBolaX, x + 30)
+    );
+
+    const pontoMaisProximoY = Math.max(
+        y,
+        Math.min(centroBolaY, y + 30)
+    );
+
+    const distancia = Math.hypot(
+        centroBolaX - pontoMaisProximoX,
+        centroBolaY - pontoMaisProximoY
+    );
+
+    // 87 pixels considera a região interna da bola
+    const dentro = distancia <= 87;
+
+    if (dentro) {
+        tempo += delta * 16.67 / 1000;
+
+        status.textContent = "Dentro da bola: " + tempo.toFixed(1) + "s";
+        status.style.color = "#009d72";
+
+        bola.classList.add("dentro");
+        jogador.classList.add("dentro");
+    }
+    else {
+        status.textContent = "Você saiu da bola!";
+        status.style.color = "#d93636";
+
+        bola.classList.remove("dentro");
+        jogador.classList.remove("dentro");
+    }
+
+    /* A tecla acompanha a cor da borda da bola */
+    if (qteAtivo) {
+        qte.style.color = dentro ? "#00c995" : "#008cff";
+    }
+
+    /* Sistema de QTE */
+    if (!qteAtivo) {
+        proximoQTE -= delta / 60;
+
+        if (proximoQTE <= 0) {
+            teclaQTE = teclasQTE[
+                Math.floor(Math.random() * teclasQTE.length)
+            ];
+
+            qteAtivo = true;
+            tempoQTE = 2.5;
+
+            mostrarQTE(
+                teclaQTE === "SPACE" ? "␣" : teclaQTE,
+                dentro ? "#00c995" : "#008cff"
+            );
+        }
+    }
+    else {
+        tempoQTE -= delta / 60;
+
+        if (tempoQTE <= 0) {
+            mostrarQTE("✗", "red");
+
+            qteAtivo = false;
+            proximoQTE = 3;
+        }
+    }
+
+    jogador.style.left = x + "px";
+    jogador.style.top = y + "px";
+
+    bola.style.left = bolaX + "px";
+    bola.style.top = bolaY + "px";
+
+    requestAnimationFrame(atualizar);
+}
+
+atualizar();
+</script>
+
+</body>
+</html>
