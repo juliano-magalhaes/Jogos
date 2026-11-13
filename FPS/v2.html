@@ -1,0 +1,1377 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dodgeball FPS - Prototype 02</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    overflow: hidden;
+    background: #101820;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+canvas { display: block; }
+
+#hud {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+}
+
+#crosshair {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 18px;
+    height: 18px;
+    transform: translate(-50%, -50%);
+}
+
+#crosshair::before, #crosshair::after {
+    content: "";
+    position: absolute;
+    background: white;
+    box-shadow: 0 0 5px #00c8ff;
+}
+
+#crosshair::before {
+    width: 2px;
+    height: 18px;
+    left: 8px;
+}
+
+#crosshair::after {
+    width: 18px;
+    height: 2px;
+    top: 8px;
+}
+
+#topHud {
+    position: absolute;
+    top: 18px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 12px;
+}
+
+.panel {
+    padding: 12px 20px;
+    background: rgba(5,12,20,.85);
+    border: 1px solid #344858;
+    text-align: center;
+    min-width: 120px;
+}
+
+.panel small {
+    display: block;
+    color: #8da5b8;
+    font-size: 10px;
+    letter-spacing: 2px;
+    margin-bottom: 5px;
+}
+
+.panel strong {
+    font-size: 22px;
+    color: #4ccaff;
+}
+
+#bottomHud {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(5,12,20,.85);
+    border: 1px solid #344858;
+    padding: 12px 18px;
+    line-height: 1.7;
+}
+
+#bottomHud span { color: #4ccaff; }
+
+#hint {
+    position: absolute;
+    bottom: 24px;
+    right: 24px;
+    color: white;
+    background: rgba(5,12,20,.8);
+    padding: 12px 18px;
+    border: 1px solid #344858;
+}
+
+#message {
+    position: absolute;
+    top: 25%;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 30px;
+    font-weight: bold;
+    letter-spacing: 3px;
+    text-shadow: 0 0 12px black;
+    opacity: 0;
+    transition: opacity .2s;
+}
+
+#overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(3,8,14,.88);
+}
+
+#menu {
+    width: min(460px,90vw);
+    padding: 38px;
+    text-align: center;
+    background: #111d29;
+    border: 1px solid #36536b;
+    box-shadow: 0 0 45px rgba(0,130,200,.15);
+}
+
+h1 {
+    margin: 0;
+    font-size: 38px;
+    letter-spacing: 5px;
+    color: #4ccaff;
+}
+
+.subtitle {
+    color: #93a9b9;
+    letter-spacing: 3px;
+    font-size: 12px;
+    margin: 8px 0 25px;
+}
+
+#menu p {
+    color: #a9b8c4;
+    line-height: 1.6;
+}
+
+button {
+    margin-top: 18px;
+    padding: 14px 38px;
+    background: #087eb5;
+    color: white;
+    border: none;
+    font-weight: bold;
+    font-size: 16px;
+    letter-spacing: 2px;
+    cursor: pointer;
+}
+
+button:hover { background: #13a9eb; }
+
+.controls {
+    margin-top: 25px;
+    color: #718899;
+    font-size: 12px;
+    line-height: 2;
+}
+
+.hidden { display: none !important; }
+</style>
+</head>
+
+<body>
+
+<div id="hud">
+    <div id="crosshair"></div>
+
+    <div id="topHud">
+        <div class="panel">
+            <small>SUA VIDA</small>
+            <strong id="health">3</strong>
+        </div>
+        <div class="panel">
+            <small>ADVERSÁRIOS</small>
+            <strong id="enemies">3</strong>
+        </div>
+        <div class="panel">
+            <small>BOLAS</small>
+            <strong id="ballCount">0</strong>
+        </div>
+    </div>
+
+    <div id="bottomHud">
+        MOVIMENTO: <span>W A S D</span><br>
+        PEGAR BOLA: <span>E</span><br>
+        ARREMESSAR: <span>CLIQUE ESQUERDO</span>
+    </div>
+
+    <div id="hint">ENCONTRE UMA BOLA!</div>
+    <div id="message"></div>
+
+</div>
+
+<div id="overlay">
+    <div id="menu">
+        <h1>DODGEBALL</h1>
+        <div class="subtitle">FIRST PERSON ARENA</div>
+        <p id="menuDescription">
+            Enfrente três adversários controlados por IA.
+            Elimine todos para vencer!
+        </p>
+        <button id="startButton">INICIAR PARTIDA</button>
+        <div class="controls">
+            WASD — MOVIMENTAR<br>
+            MOUSE — OLHAR<br>
+            E — PEGAR BOLA<br>
+            CLIQUE ESQUERDO — ARREMESSAR<br>
+            ESC — PAUSAR
+        </div>
+    </div>
+</div>
+
+<script type="module">
+import * as THREE from
+"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+
+// ======================================
+// CONFIGURAÇÃO
+// ======================================
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x101820);
+scene.fog = new THREE.Fog(0x101820, 18, 55);
+
+const camera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    100
+);
+
+// A câmera precisa fazer parte da cena para que objetos filhos dela
+// (como a bola que aparece na tela) também sejam renderizados.
+scene.add(camera);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+
+document.body.appendChild(renderer.domElement);
+
+// ======================================
+// VARIÁVEIS
+// ======================================
+
+const keys = {};
+
+const arena = {
+    width: 24,
+    depth: 36,
+    centerLine: 0
+};
+
+const player = {
+    x: 0,
+    z: 9,
+    height: 1.7,
+    speed: 7,
+    health: 3,
+    hasBall: false,
+    alive: true
+};
+
+let yaw = 0;
+let pitch = 0;
+let locked = false;
+let gameStarted = false;
+let gameOver = false;
+let lastTime = 0;
+let bob = 0;
+
+let balls = [];
+let projectiles = [];
+let bots = [];
+
+let messageTimer = 0;
+
+const ballGeometry = new THREE.SphereGeometry(0.22, 20, 16);
+
+const ballMaterial = new THREE.MeshStandardMaterial({
+    color: 0xff8b25,
+    roughness: 0.45
+});
+
+// A bola segurada usa exatamente a mesma geometria e o mesmo material
+// das bolas espalhadas pela quadra.
+const heldBallMesh = new THREE.Mesh(ballGeometry, ballMaterial);
+heldBallMesh.position.set(0.78, -0.55, -1.35);
+heldBallMesh.scale.setScalar(1.55);
+heldBallMesh.renderOrder = 10;
+heldBallMesh.visible = false;
+camera.add(heldBallMesh);
+
+// ======================================
+// ILUMINAÇÃO
+// ======================================
+
+scene.add(new THREE.HemisphereLight(0xffffff, 0x39404c, 2));
+
+const mainLight = new THREE.DirectionalLight(0xffffff, 2);
+mainLight.position.set(-7, 14, 8);
+mainLight.castShadow = true;
+scene.add(mainLight);
+
+// ======================================
+// ARENA
+// ======================================
+
+function createArena() {
+    const floor = new THREE.Mesh(
+        new THREE.PlaneGeometry(arena.width, arena.depth),
+        new THREE.MeshStandardMaterial({
+            color: 0x263c4b,
+            roughness: 0.85
+        })
+    );
+
+    floor.rotation.x = -Math.PI / 2;
+    floor.receiveShadow = true;
+    scene.add(floor);
+
+    function line(x1, z1, x2, z2, color = 0xffffff) {
+        const points = [
+            new THREE.Vector3(x1, 0.025, z1),
+            new THREE.Vector3(x2, 0.025, z2)
+        ];
+
+        const geometry = new THREE.BufferGeometry().setFromPoints(points);
+        const material = new THREE.LineBasicMaterial({ color });
+
+        scene.add(new THREE.Line(geometry, material));
+    }
+
+    // Marcações da quadra
+    line(-10, 0, 10, 0, 0xffffff);
+    line(-10, -8, 10, -8);
+    line(-10, 8, 10, 8);
+    line(-10, -16, -10, 16);
+    line(10, -16, 10, 16);
+
+    // Linha central destacada
+    line(-12, 0, 12, 0, 0x42caff);
+
+    const wallMaterial = new THREE.MeshStandardMaterial({
+        color: 0x344b5d,
+        roughness: 0.8
+    });
+
+    function wall(x, y, z, w, h, d) {
+        const mesh = new THREE.Mesh(
+            new THREE.BoxGeometry(w, h, d),
+            wallMaterial
+        );
+
+        mesh.position.set(x, y, z);
+        mesh.castShadow = true;
+        mesh.receiveShadow = true;
+        scene.add(mesh);
+    }
+
+    wall(0, 3, -18, 24, 6, 0.5);
+    wall(0, 3, 18, 24, 6, 0.5);
+    wall(-12, 3, 0, 0.5, 6, 36);
+    wall(12, 3, 0, 0.5, 6, 36);
+
+    for (let z = -14; z <= 14; z += 7) {
+        for (const x of [-11.5, 11.5]) {
+            const pillar = new THREE.Mesh(
+                new THREE.BoxGeometry(0.5, 5, 0.5),
+                new THREE.MeshStandardMaterial({ color: 0x172b3a })
+            );
+
+            pillar.position.set(x, 2.5, z);
+            scene.add(pillar);
+        }
+    }
+
+    const ceiling = new THREE.Mesh(
+        new THREE.PlaneGeometry(24, 36),
+        new THREE.MeshStandardMaterial({
+            color: 0x18232e,
+            side: THREE.DoubleSide
+        })
+    );
+
+    ceiling.rotation.x = Math.PI / 2;
+    ceiling.position.y = 6;
+    scene.add(ceiling);
+
+    for (let z = -12; z <= 12; z += 8) {
+        const lamp = new THREE.Mesh(
+            new THREE.BoxGeometry(5, 0.12, 0.5),
+            new THREE.MeshBasicMaterial({ color: 0x8bdfff })
+        );
+
+        lamp.position.set(0, 5.8, z);
+        scene.add(lamp);
+
+        const light = new THREE.PointLight(0x9adfff, 20, 15);
+        light.position.set(0, 5, z);
+        scene.add(light);
+    }
+}
+
+createArena();
+
+// ======================================
+// CÂMERA
+// ======================================
+
+function updateCamera() {
+    camera.position.set(
+        player.x,
+        player.height + Math.sin(bob) * 0.035,
+        player.z
+    );
+
+    camera.rotation.order = "YXZ";
+    camera.rotation.y = yaw;
+    camera.rotation.x = pitch;
+}
+
+// ======================================
+// BOLAS
+// ======================================
+
+function createBall(x, z) {
+    const mesh = new THREE.Mesh(
+        ballGeometry,
+        ballMaterial.clone()
+    );
+
+    mesh.position.set(x, 0.25, z);
+    mesh.castShadow = true;
+    scene.add(mesh);
+
+    const ball = {
+        mesh,
+        x,
+        z,
+        active: true,
+        thrown: false
+    };
+
+    balls.push(ball);
+    return ball;
+}
+
+function spawnInitialBalls() {
+    createBall(-4, 0);
+    createBall(0, -1);
+    createBall(4, 0);
+    createBall(-3, 5);
+    createBall(3, -5);
+}
+
+function removeBall(ball) {
+    if (!ball || !ball.active) return;
+
+    ball.active = false;
+    scene.remove(ball.mesh);
+}
+
+function pickupBall() {
+    if (player.hasBall || !locked || gameOver) return;
+
+    // Primeiro: tenta capturar um arremesso dos adversários.
+    let closestProjectile = null;
+    let closestProjectileDistance = 2.15;
+
+    const playerPosition = new THREE.Vector3(
+        player.x,
+        player.height,
+        player.z
+    );
+
+    for (const projectile of projectiles) {
+        if (!projectile.active || projectile.owner !== "bot") continue;
+
+        // A bola precisa estar em uma altura alcançável.
+        if (projectile.position.y < 0.15 || projectile.position.y > 2.8) continue;
+
+        const distance = projectile.position.distanceTo(playerPosition);
+
+        if (distance < closestProjectileDistance) {
+            closestProjectileDistance = distance;
+            closestProjectile = projectile;
+        }
+    }
+
+    if (closestProjectile) {
+        destroyProjectile(closestProjectile);
+        player.hasBall = true;
+        showMessage("ARREMESSO CAPTURADO!");
+        updateHUD();
+        return;
+    }
+
+    // Se não houver arremesso chegando, tenta pegar uma bola no chão.
+    let closest = null;
+    let closestDistance = 1.7;
+
+    for (const ball of balls) {
+        if (!ball.active || ball.thrown) continue;
+
+        const distance = Math.hypot(
+            ball.x - player.x,
+            ball.z - player.z
+        );
+
+        if (distance < closestDistance) {
+            closestDistance = distance;
+            closest = ball;
+        }
+    }
+
+    if (closest) {
+        removeBall(closest);
+        player.hasBall = true;
+        showMessage("BOLA PEGADA!");
+        updateHUD();
+    } else {
+        showMessage("CHEGUE MAIS PERTO DA BOLA!");
+    }
+}
+
+// ======================================
+// ADVERSÁRIOS
+// ======================================
+
+function createBot(x, z, index) {
+    const group = new THREE.Group();
+
+    const bodyMaterial = new THREE.MeshStandardMaterial({
+        color: 0xd84a4a,
+        roughness: 0.75
+    });
+
+    const darkMaterial = new THREE.MeshStandardMaterial({
+        color: 0x202b36
+    });
+
+    const body = new THREE.Mesh(
+        new THREE.CapsuleGeometry(0.38, 0.75, 4, 8),
+        bodyMaterial
+    );
+
+    body.position.y = 1.05;
+    body.castShadow = true;
+    group.add(body);
+
+    const head = new THREE.Mesh(
+        new THREE.SphereGeometry(0.27, 16, 12),
+        new THREE.MeshStandardMaterial({ color: 0xe0ae91 })
+    );
+
+    head.position.y = 1.85;
+    group.add(head);
+
+    const shirt = new THREE.Mesh(
+        new THREE.BoxGeometry(0.82, 0.45, 0.35),
+        darkMaterial
+    );
+
+    shirt.position.y = 1.15;
+    group.add(shirt);
+
+    const leftArm = new THREE.Mesh(
+        new THREE.CapsuleGeometry(0.11, 0.48, 3, 6),
+        bodyMaterial
+    );
+
+    leftArm.position.set(-0.48, 1.15, 0);
+    leftArm.rotation.z = -0.3;
+    group.add(leftArm);
+
+    const rightArm = leftArm.clone();
+    rightArm.position.x = 0.48;
+    rightArm.rotation.z = 0.3;
+    group.add(rightArm);
+
+    const legs = new THREE.Mesh(
+        new THREE.BoxGeometry(0.55, 0.7, 0.3),
+        darkMaterial
+    );
+
+    legs.position.y = 0.35;
+    group.add(legs);
+
+    group.position.set(x, 0, z);
+    scene.add(group);
+
+    const bot = {
+        group,
+        x,
+        z,
+        alive: true,
+        hasBall: false,
+        health: 1,
+        throwCooldown: 2 + Math.random() * 2,
+        catchCooldown: 0,
+        moveSpeed: 2.2 + Math.random() * 0.7,
+        index
+    };
+
+    bots.push(bot);
+    return bot;
+}
+
+function createBots() {
+    createBot(-5, -10, 1);
+    createBot(0, -13, 2);
+    createBot(5, -10, 3);
+}
+
+// ======================================
+// PROJÉTEIS
+// ======================================
+
+function throwBall() {
+    if (!player.hasBall || !locked || gameOver) return;
+
+    player.hasBall = false;
+
+    const direction = new THREE.Vector3();
+    camera.getWorldDirection(direction);
+
+    const start = camera.position.clone()
+        .add(direction.clone().multiplyScalar(0.8));
+
+    const mesh = new THREE.Mesh(
+        ballGeometry,
+        ballMaterial.clone()
+    );
+
+    mesh.position.copy(start);
+    mesh.castShadow = true;
+    scene.add(mesh);
+
+    projectiles.push({
+        mesh,
+        position: start,
+        previousPosition: start.clone(),
+        velocity: direction.multiplyScalar(18),
+        owner: "player",
+        active: true
+    });
+
+    updateHUD();
+}
+
+function botThrow(bot) {
+    if (!bot.alive) return;
+
+    const start = new THREE.Vector3(bot.x, 1.45, bot.z);
+
+    const target = new THREE.Vector3(
+        player.x,
+        1.3,
+        player.z
+    );
+
+    const direction = target.sub(start).normalize();
+
+    direction.x += (Math.random() - 0.5) * 0.18;
+    direction.y += (Math.random() - 0.5) * 0.12;
+    direction.normalize();
+
+    const mesh = new THREE.Mesh(
+        ballGeometry,
+        ballMaterial.clone()
+    );
+
+    // Todas as bolas usam a mesma cor laranja.
+    mesh.position.copy(start);
+    scene.add(mesh);
+
+    projectiles.push({
+        mesh,
+        position: start,
+        previousPosition: start.clone(),
+        velocity: direction.multiplyScalar(13),
+        owner: "bot",
+        active: true
+    });
+
+    bot.hasBall = false;
+    bot.throwCooldown = 2.5 + Math.random() * 2;
+}
+
+// ======================================
+// MOVIMENTAÇÃO DOS BOTS
+// ======================================
+
+// LIMITES DO CAMPO ADVERSÁRIO
+const BOT_MIN_Z = -16;
+const BOT_MAX_Z = -0.8;
+
+function moveBot(bot, dx, dz, delta) {
+    const length = Math.hypot(dx, dz) || 1;
+
+    dx /= length;
+    dz /= length;
+
+    bot.x += dx * bot.moveSpeed * delta;
+    bot.z += dz * bot.moveSpeed * delta;
+
+    // Bots não podem atravessar a linha central
+    bot.x = THREE.MathUtils.clamp(bot.x, -10.5, 10.5);
+    bot.z = THREE.MathUtils.clamp(
+        bot.z,
+        BOT_MIN_Z,
+        BOT_MAX_Z
+    );
+
+    bot.group.position.set(bot.x, 0, bot.z);
+
+    if (Math.abs(dx) + Math.abs(dz) > 0.01) {
+        bot.group.rotation.y = Math.atan2(dx, dz);
+    }
+}
+
+function moveBotTowardPlayer(bot, delta) {
+    const angle = Math.atan2(
+        player.x - bot.x,
+        player.z - bot.z
+    );
+
+    moveBot(
+        bot,
+        Math.sin(angle),
+        Math.cos(angle),
+        delta
+    );
+}
+
+function moveBotAway(bot, delta) {
+    const angle = Math.atan2(
+        bot.x - player.x,
+        bot.z - player.z
+    );
+
+    moveBot(
+        bot,
+        Math.sin(angle),
+        Math.cos(angle),
+        delta
+    );
+}
+
+// ======================================
+// IA DOS BOTS
+// ======================================
+
+function updateBots(delta) {
+    for (const bot of bots) {
+        if (!bot.alive) continue;
+
+        bot.catchCooldown = Math.max(0, bot.catchCooldown - delta);
+
+        const distanceToPlayer = Math.hypot(
+            player.x - bot.x,
+            player.z - bot.z
+        );
+
+        if (bot.hasBall) {
+            bot.throwCooldown -= delta;
+
+            if (distanceToPlayer < 6) {
+                moveBotAway(bot, delta);
+            } else if (distanceToPlayer > 10) {
+                moveBotTowardPlayer(bot, delta);
+            }
+
+            if (
+                bot.throwCooldown <= 0 &&
+                distanceToPlayer < 16
+            ) {
+                botThrow(bot);
+            }
+
+            continue;
+        }
+
+        let nearestBall = null;
+        let nearestDistance = Infinity;
+
+        for (const ball of balls) {
+            if (!ball.active || ball.thrown) continue;
+
+            // Os bots só procuram bolas que estejam no campo deles
+            // ou praticamente em cima da linha central.
+            if (ball.z > 0.5) continue;
+
+            const distance = Math.hypot(
+                ball.x - bot.x,
+                ball.z - bot.z
+            );
+
+            if (distance < nearestDistance) {
+                nearestDistance = distance;
+                nearestBall = ball;
+            }
+        }
+
+        if (nearestBall) {
+            if (nearestDistance < 0.9) {
+                removeBall(nearestBall);
+                bot.hasBall = true;
+                bot.throwCooldown = 1.2 + Math.random();
+            } else {
+                const angle = Math.atan2(
+                    nearestBall.z - bot.z,
+                    nearestBall.x - bot.x
+                );
+
+                moveBot(
+                    bot,
+                    Math.cos(angle),
+                    Math.sin(angle),
+                    delta
+                );
+            }
+        } else {
+            moveBotTowardPlayer(bot, delta);
+        }
+    }
+}
+
+// ======================================
+// SEPARAÇÃO ENTRE OS BOTS
+// ======================================
+
+function resolveBotCollisions() {
+    const minimumDistance = 1.35;
+
+    // Algumas passagens ajudam a resolver também pequenos empurrões
+    // acumulados quando os três bots tentam alcançar a mesma bola.
+    for (let pass = 0; pass < 3; pass++) {
+        for (let i = 0; i < bots.length; i++) {
+            const botA = bots[i];
+            if (!botA.alive) continue;
+
+            for (let j = i + 1; j < bots.length; j++) {
+                const botB = bots[j];
+                if (!botB.alive) continue;
+
+                let dx = botB.x - botA.x;
+                let dz = botB.z - botA.z;
+                let distance = Math.hypot(dx, dz);
+
+                if (distance >= minimumDistance) continue;
+
+                // Evita divisão por zero se dois bots estiverem exatamente
+                // na mesma posição.
+                if (distance < 0.0001) {
+                    const angle = (i + j + 1) * 1.7;
+                    dx = Math.cos(angle);
+                    dz = Math.sin(angle);
+                    distance = 1;
+                }
+
+                const overlap = (minimumDistance - distance) / 2;
+                const normalX = dx / distance;
+                const normalZ = dz / distance;
+
+                botA.x -= normalX * overlap;
+                botA.z -= normalZ * overlap;
+                botB.x += normalX * overlap;
+                botB.z += normalZ * overlap;
+
+                botA.x = THREE.MathUtils.clamp(botA.x, -10.5, 10.5);
+                botA.z = THREE.MathUtils.clamp(botA.z, BOT_MIN_Z, BOT_MAX_Z);
+                botB.x = THREE.MathUtils.clamp(botB.x, -10.5, 10.5);
+                botB.z = THREE.MathUtils.clamp(botB.z, BOT_MIN_Z, BOT_MAX_Z);
+            }
+        }
+    }
+
+    // Atualiza os modelos 3D depois de corrigir as posições.
+    for (const bot of bots) {
+        if (!bot.alive) continue;
+        bot.group.position.set(bot.x, 0, bot.z);
+    }
+}
+
+// ======================================
+// FÍSICA DOS PROJÉTEIS
+// ======================================
+
+function destroyProjectile(projectile) {
+    if (!projectile.active) return;
+
+    projectile.active = false;
+    scene.remove(projectile.mesh);
+}
+
+// Quando um arremesso perde a velocidade no chão, ele vira
+// uma bola solta da quadra que pode ser recolhida pelos bots.
+function settleProjectileAsBall(projectile) {
+    if (!projectile.active) return;
+
+    projectile.active = false;
+    projectile.mesh.position.set(
+        projectile.position.x,
+        0.25,
+        projectile.position.z
+    );
+
+    balls.push({
+        mesh: projectile.mesh,
+        x: projectile.position.x,
+        z: projectile.position.z,
+        active: true,
+        thrown: false
+    });
+}
+
+function distancePointToSegment(point, start, end) {
+    const segment = new THREE.Vector3().subVectors(end, start);
+    const lengthSquared = segment.lengthSq();
+
+    if (lengthSquared === 0) {
+        return point.distanceTo(start);
+    }
+
+    const t = THREE.MathUtils.clamp(
+        new THREE.Vector3().subVectors(point, start).dot(segment) / lengthSquared,
+        0,
+        1
+    );
+
+    const closest = start.clone().addScaledVector(segment, t);
+    return point.distanceTo(closest);
+}
+
+function updateProjectiles(delta) {
+    for (const projectile of projectiles) {
+        if (!projectile.active) continue;
+
+        // Guarda a posição anterior para que bolas rápidas
+        // não atravessem os jogadores entre dois frames.
+        projectile.previousPosition.copy(projectile.position);
+
+        projectile.velocity.y -= 9.8 * delta;
+
+        projectile.position.addScaledVector(
+            projectile.velocity,
+            delta
+        );
+
+        projectile.mesh.position.copy(projectile.position);
+
+        if (projectile.position.y < 0.22) {
+            projectile.position.y = 0.22;
+            projectile.velocity.y *= -0.35;
+            projectile.velocity.x *= 0.75;
+            projectile.velocity.z *= 0.75;
+
+            if (Math.abs(projectile.velocity.y) < 1) {
+                projectile.velocity.y = 0;
+            }
+        }
+
+        // Atrito quando a bola está rolando pelo chão.
+        if (projectile.position.y <= 0.23 && projectile.velocity.y === 0) {
+            const groundFriction = Math.exp(-3.2 * delta);
+            projectile.velocity.x *= groundFriction;
+            projectile.velocity.z *= groundFriction;
+
+            const horizontalSpeed = Math.hypot(
+                projectile.velocity.x,
+                projectile.velocity.z
+            );
+
+            // Parou de rolar: transforma o projétil em bola solta.
+            if (horizontalSpeed < 0.55) {
+                settleProjectileAsBall(projectile);
+                continue;
+            }
+        }
+
+        if (
+            Math.abs(projectile.position.x) > 11.5 ||
+            Math.abs(projectile.position.z) > 17.5
+        ) {
+            destroyProjectile(projectile);
+            continue;
+        }
+
+        if (projectile.owner === "player") {
+            // Primeiro verifica se algum bot consegue capturar.
+            // A captura acontece antes da eliminação por impacto.
+            let caughtByBot = false;
+
+            if (projectile.position.y >= 0.15 && projectile.position.y <= 2.8) {
+                for (const bot of bots) {
+                    if (!bot.alive || bot.hasBall || bot.catchCooldown > 0) continue;
+
+                    const botPosition = new THREE.Vector3(
+                        bot.x,
+                        1.15,
+                        bot.z
+                    );
+
+                    const distance = distancePointToSegment(
+                        botPosition,
+                        projectile.previousPosition,
+                        projectile.position
+                    );
+
+                    if (distance < 1.05) {
+                        destroyProjectile(projectile);
+                        bot.hasBall = true;
+                        bot.catchCooldown = 1.0;
+                        bot.throwCooldown = 1.0 + Math.random() * 0.5;
+                        showMessage("O ADVERSÁRIO CAPTUROU!");
+                        caughtByBot = true;
+                        break;
+                    }
+                }
+            }
+
+            if (caughtByBot) continue;
+
+            // Se nenhum bot capturou, verifica o impacto.
+            for (const bot of bots) {
+                if (!bot.alive) continue;
+
+                const botPosition = new THREE.Vector3(
+                    bot.x,
+                    1.1,
+                    bot.z
+                );
+
+                const distance = distancePointToSegment(
+                    botPosition,
+                    projectile.previousPosition,
+                    projectile.position
+                );
+
+                if (distance < 0.78) {
+                    eliminateBot(bot);
+                    destroyProjectile(projectile);
+                    showMessage("ACERTOU!");
+                    break;
+                }
+            }
+        } else {
+            // Projétil inimigo: colisão também usa o trajeto
+            // percorrido neste frame, evitando que atravesse o jogador.
+            const playerPosition = new THREE.Vector3(
+                player.x,
+                1.25,
+                player.z
+            );
+
+            const distance = distancePointToSegment(
+                playerPosition,
+                projectile.previousPosition,
+                projectile.position
+            );
+
+            if (distance < 0.72) {
+                hitPlayer();
+                destroyProjectile(projectile);
+            }
+        }
+
+        if (projectile.position.y > 8) {
+            destroyProjectile(projectile);
+        }
+    }
+
+    projectiles = projectiles.filter(p => p.active);
+}
+
+// ======================================
+// ELIMINAÇÕES
+// ======================================
+
+function eliminateBot(bot) {
+    bot.alive = false;
+    scene.remove(bot.group);
+
+    updateHUD();
+
+    if (bots.filter(b => b.alive).length === 0) {
+        finishGame(true);
+    }
+}
+
+function hitPlayer() {
+    player.health--;
+    updateHUD();
+    showMessage("VOCÊ FOI ATINGIDO!");
+
+    if (player.health <= 0) {
+        finishGame(false);
+    }
+}
+
+// ======================================
+// MOVIMENTAÇÃO DO JOGADOR
+// ======================================
+
+function updatePlayer(delta) {
+    let forward = 0;
+    let side = 0;
+
+    if (keys["w"] || keys["W"]) forward += 1;
+    if (keys["s"] || keys["S"]) forward -= 1;
+    if (keys["a"] || keys["A"]) side -= 1;
+    if (keys["d"] || keys["D"]) side += 1;
+
+    const length = Math.hypot(forward, side);
+
+    if (length > 0) {
+        forward /= length;
+        side /= length;
+
+        // Vetores corrigidos para acompanhar
+        // exatamente a orientação da câmera.
+        const dx =
+            -Math.sin(yaw) * forward +
+            Math.cos(yaw) * side;
+
+        const dz =
+            -Math.cos(yaw) * forward -
+            Math.sin(yaw) * side;
+
+        const speed = player.speed * delta;
+
+        const nextX = player.x + dx * speed;
+        const nextZ = player.z + dz * speed;
+
+        player.x = THREE.MathUtils.clamp(
+            nextX,
+            -10.7,
+            10.7
+        );
+
+        player.z = THREE.MathUtils.clamp(
+            nextZ,
+            0.8,
+            16.5
+        );
+
+        bob += delta * 10;
+    }
+
+    updateCamera();
+}
+
+// ======================================
+// INTERFACE
+// ======================================
+
+const healthUI = document.getElementById("health");
+const enemiesUI = document.getElementById("enemies");
+const ballCountUI = document.getElementById("ballCount");
+const hint = document.getElementById("hint");
+const messageUI = document.getElementById("message");
+const overlay = document.getElementById("overlay");
+const startButton = document.getElementById("startButton");
+const menuDescription = document.getElementById("menuDescription");
+
+function updateHUD() {
+    healthUI.textContent = player.health;
+
+    enemiesUI.textContent =
+        bots.filter(bot => bot.alive).length;
+
+    ballCountUI.textContent =
+        player.hasBall ? "1" : "0";
+
+    // Mostra o modelo 3D real da bola enquanto estiver segurando.
+    heldBallMesh.visible = player.hasBall;
+
+    hint.textContent = player.hasBall
+        ? "CLIQUE PARA ARREMESSAR!"
+        : "PRESSIONE E PARA PEGAR UMA BOLA";
+}
+
+function showMessage(text) {
+    messageUI.textContent = text;
+    messageUI.style.opacity = 1;
+    messageTimer = 1.2;
+}
+
+function finishGame(won) {
+    gameOver = true;
+    gameStarted = false;
+
+    menuDescription.textContent = won
+        ? "VITÓRIA! Você eliminou todos os adversários."
+        : "FIM DE JOGO! Os adversários venceram.";
+
+    startButton.textContent = "JOGAR NOVAMENTE";
+    overlay.classList.remove("hidden");
+
+    if (document.pointerLockElement) {
+        document.exitPointerLock();
+    }
+}
+
+// ======================================
+// CONTROLES
+// ======================================
+
+document.addEventListener("keydown", event => {
+    keys[event.key] = true;
+
+    if (event.key.toLowerCase() === "e") {
+        pickupBall();
+    }
+});
+
+document.addEventListener("keyup", event => {
+    keys[event.key] = false;
+});
+
+document.addEventListener("mousemove", event => {
+    if (!locked || gameOver) return;
+
+    yaw -= event.movementX * 0.002;
+    pitch -= event.movementY * 0.002;
+
+    pitch = THREE.MathUtils.clamp(
+        pitch,
+        -1.2,
+        1.2
+    );
+});
+
+document.addEventListener("mousedown", event => {
+    if (event.button === 0) {
+        throwBall();
+    }
+});
+
+document.addEventListener("pointerlockchange", () => {
+    locked = document.pointerLockElement === renderer.domElement;
+
+    if (!locked && gameStarted && !gameOver) {
+        overlay.classList.remove("hidden");
+        startButton.textContent = "CONTINUAR";
+        menuDescription.textContent = "Partida pausada.";
+    } else if (locked) {
+        overlay.classList.add("hidden");
+    }
+});
+
+// ======================================
+// REINICIAR
+// ======================================
+
+function resetGame() {
+    for (const ball of balls) {
+        scene.remove(ball.mesh);
+    }
+
+    for (const projectile of projectiles) {
+        scene.remove(projectile.mesh);
+    }
+
+    for (const bot of bots) {
+        scene.remove(bot.group);
+    }
+
+    balls = [];
+    projectiles = [];
+    bots = [];
+
+    player.x = 0;
+    player.z = 9;
+    player.health = 3;
+    player.hasBall = false;
+    player.alive = true;
+
+    yaw = 0;
+    pitch = 0;
+    bob = 0;
+    gameOver = false;
+
+    camera.position.set(0, player.height, 9);
+
+    spawnInitialBalls();
+    createBots();
+    updateHUD();
+}
+
+startButton.addEventListener("click", () => {
+    if (gameOver) {
+        resetGame();
+    }
+
+    gameStarted = true;
+    renderer.domElement.requestPointerLock();
+});
+
+// ======================================
+// LOOP PRINCIPAL
+// ======================================
+
+function animate(time) {
+    requestAnimationFrame(animate);
+
+    const delta = Math.min(
+        (time - lastTime) / 1000 || 0,
+        0.04
+    );
+
+    lastTime = time;
+
+    if (locked && gameStarted && !gameOver) {
+        updatePlayer(delta);
+        updateBots(delta);
+        resolveBotCollisions();
+        updateProjectiles(delta);
+
+        if (messageTimer > 0) {
+            messageTimer -= delta;
+
+            if (messageTimer <= 0) {
+                messageUI.style.opacity = 0;
+            }
+        }
+    }
+
+    renderer.render(scene, camera);
+}
+
+resetGame();
+requestAnimationFrame(animate);
+
+// ======================================
+// REDIMENSIONAMENTO
+// ======================================
+
+window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
+});
+</script>
+
+</body>
+</html>
