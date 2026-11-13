@@ -4,7 +4,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dodgeball FPS - Prototype 03</title>
+<title>Dodgeball</title>
 
 <style>
 * { box-sizing: border-box; }
@@ -234,6 +234,7 @@ button:hover { background: #13a9eb; }
 
     <div id="bottomHud">
         MOVIMENTO: <span>W A S D</span><br>
+        PULAR: <span>ESPAÇO</span><br>
         PEGAR BOLA: <span>E</span><br>
         ARREMESSAR: <span>SEGURE E SOLTE O CLIQUE ESQUERDO</span>
     </div>
@@ -253,6 +254,7 @@ button:hover { background: #13a9eb; }
         <button id="startButton">INICIAR PARTIDA</button>
         <div class="controls">
             WASD — MOVIMENTAR<br>
+            ESPAÇO — PULAR<br>
             MOUSE — OLHAR<br>
             E — PEGAR BOLA<br>
             CLIQUE ESQUERDO — ARREMESSAR<br>
@@ -292,13 +294,27 @@ document.body.appendChild(renderer.domElement);
 
 const keys = {};
 
-// Quadra com metade da profundidade
 const arena = { width: 24, depth: 18, centerLine: 0 };
 
 const player = {
-    x: 0, z: 4.5, height: 1.7, speed: 7,
-    health: 3, hasBall: false, alive: true
+    x: 0,
+    z: 4.5,
+    height: 1.7,
+    speed: 7,
+    health: 3,
+    hasBall: false,
+    alive: true,
+
+    // NOVO: física do pulo
+    jumpHeight: 0,
+    jumpVelocity: 0,
+    jumpCooldown: 0,
+    grounded: true
 };
+
+const JUMP_FORCE = 6.5;
+const JUMP_GRAVITY = 18;
+const JUMP_COOLDOWN = 0.35;
 
 let yaw = 0;
 let pitch = 0;
@@ -366,7 +382,6 @@ function createArena() {
         scene.add(new THREE.Line(geometry, material));
     }
 
-    // Marcações da quadra reduzida
     line(-10, 0, 10, 0, 0xffffff);
     line(-10, -4, 10, -4);
     line(-10, 4, 10, 4);
@@ -436,9 +451,12 @@ createArena();
 function updateCamera() {
     camera.position.set(
         player.x,
-        player.height + Math.sin(bob) * 0.035,
+        player.height +
+        player.jumpHeight +
+        (player.grounded ? Math.sin(bob) * 0.035 : 0),
         player.z
     );
+
     camera.rotation.order = "YXZ";
     camera.rotation.y = yaw;
     camera.rotation.x = pitch;
@@ -612,13 +630,11 @@ function throwBall(charge = 0) {
     updateHUD();
 }
 
-// Mira dos bots com compensação da gravidade.
 function botThrow(bot) {
     if (!bot.alive) return;
 
     const start = new THREE.Vector3(bot.x, 1.45, bot.z);
 
-    // Pequena variação horizontal para não terem mira perfeita.
     const targetX = player.x + (Math.random() - 0.5) * 0.7;
     const targetZ = player.z;
 
@@ -635,7 +651,6 @@ function botThrow(bot) {
         dz / (horizontalDistance || 1)
     );
 
-    // Compensa a queda causada pela gravidade.
     const verticalSpeed =
         (1.25 - start.y + 4.9 * flightTime * flightTime) / flightTime;
 
@@ -792,7 +807,6 @@ function updateBots(delta) {
                 moveBotTowardPlayer(bot, delta);
             }
 
-            // Agora conseguem arremessar mesmo do fundo da quadra.
             if (bot.throwCooldown <= 0 && distanceToPlayer < 20) {
                 botThrow(bot);
             }
@@ -986,7 +1000,6 @@ function updateProjectiles(delta) {
             }
         }
 
-        // Limites da quadra reduzida.
         if (Math.abs(projectile.position.x) > 11.5) {
             projectile.position.x = THREE.MathUtils.clamp(
                 projectile.position.x, -11.5, 11.5
@@ -1025,8 +1038,11 @@ function updateProjectiles(delta) {
                 }
             }
         } else {
+            // NOVO: acompanha a altura do jogador durante o pulo.
             const playerPosition = new THREE.Vector3(
-                player.x, 1.25, player.z
+                player.x,
+                1.25 + player.jumpHeight,
+                player.z
             );
 
             const distance = distancePointToSegment(
@@ -1043,7 +1059,6 @@ function updateProjectiles(delta) {
 
         if (!projectile.active) continue;
 
-        // A bola rebate no teto.
         if (projectile.position.y > 8) {
             projectile.position.y = 8;
             projectile.velocity.y = -Math.abs(projectile.velocity.y) * 0.7;
@@ -1076,6 +1091,41 @@ function hitPlayer() {
 
     if (player.health <= 0) {
         finishGame(false);
+    }
+}
+
+// ======================================
+// PULO DO JOGADOR
+// ======================================
+
+function jump() {
+    if (!locked || gameOver || !gameStarted) return;
+
+    if (!player.grounded || player.jumpCooldown > 0) return;
+
+    player.grounded = false;
+    player.jumpVelocity = JUMP_FORCE;
+    player.jumpCooldown = JUMP_COOLDOWN;
+}
+
+function updateJump(delta) {
+    player.jumpCooldown = Math.max(
+        0,
+        player.jumpCooldown - delta
+    );
+
+    if (player.grounded) return;
+
+    // Gravidade puxando o jogador para baixo.
+    player.jumpVelocity -= JUMP_GRAVITY * delta;
+
+    player.jumpHeight += player.jumpVelocity * delta;
+
+    // Chegou ao chão.
+    if (player.jumpHeight <= 0) {
+        player.jumpHeight = 0;
+        player.jumpVelocity = 0;
+        player.grounded = true;
     }
 }
 
@@ -1113,8 +1163,13 @@ function updatePlayer(delta) {
         player.x = THREE.MathUtils.clamp(nextX, -10.7, 10.7);
         player.z = THREE.MathUtils.clamp(nextZ, 0.8, 8);
 
-        bob += delta * 10;
+        if (player.grounded) {
+            bob += delta * 10;
+        }
     }
+
+    // Atualiza a física vertical mesmo quando o jogador está parado.
+    updateJump(delta);
 
     updateCamera();
 }
@@ -1181,6 +1236,15 @@ function finishGame(won) {
 
 document.addEventListener("keydown", event => {
     keys[event.key] = true;
+
+    // Evita que o Espaço role a página e impede pulos repetidos.
+    if (event.code === "Space") {
+        event.preventDefault();
+
+        if (!event.repeat) {
+            jump();
+        }
+    }
 
     if (event.key.toLowerCase() === "e") {
         pickupBall();
@@ -1258,6 +1322,12 @@ function resetGame() {
     player.health = 3;
     player.hasBall = false;
     player.alive = true;
+
+    // Reinicia a física do pulo.
+    player.jumpHeight = 0;
+    player.jumpVelocity = 0;
+    player.jumpCooldown = 0;
+    player.grounded = true;
 
     chargeStartedAt = null;
     currentCharge = 0;
