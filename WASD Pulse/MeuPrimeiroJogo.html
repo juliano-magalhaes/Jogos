@@ -1,0 +1,992 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WASD Pulse</title>
+
+<style>
+:root {
+    --navy: #0B2265;
+    --navy-dark: #071943;
+    --red: #A71930;
+    --white: #FFFFFF;
+    --light: #F2F4F8;
+    --gray: #778196;
+    --border: #DCE1EA;
+}
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 35px 15px;
+    font-family: Arial, Helvetica, sans-serif;
+    color: var(--white);
+    background-color: #071943;
+    background-image:
+        radial-gradient(circle at 12% 18%, #ffffff12 0 2px, transparent 3px),
+        radial-gradient(circle at 86% 72%, #ffffff10 0 2px, transparent 3px),
+        radial-gradient(ellipse at 15% 10%, #17418a 0%, transparent 42%),
+        radial-gradient(ellipse at 90% 90%, #0B2265 0%, transparent 45%),
+        linear-gradient(135deg, #071943 0%, #0B2265 55%, #092052 100%);
+    background-attachment: fixed;
+}
+
+header {
+    max-width: 650px;
+    margin: 0 auto 25px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+}
+
+.marca {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.simbolo {
+    width: 42px;
+    height: 42px;
+    background: var(--navy);
+    color: white;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 900;
+    font-size: 19px;
+    border-bottom: 4px solid var(--red);
+}
+
+.marca h1 {
+    font-size: 19px;
+    margin: 0;
+    letter-spacing: 1px;
+    font-weight: 900;
+}
+
+.marca p {
+    margin: 4px 0 0;
+    font-size: 10px;
+    letter-spacing: 2px;
+    color: #C5D2F0;
+    font-weight: bold;
+}
+
+.etiqueta {
+    background: #E5EAF5;
+    color: var(--navy);
+    font-size: 10px;
+    font-weight: bold;
+    letter-spacing: 1px;
+    padding: 8px 11px;
+    border-radius: 4px;
+}
+
+/* MOLDURA EXTERNA */
+
+#containerJogo {
+    width: 640px;
+    max-width: 100%;
+    margin: auto;
+    position: relative;
+    padding: 14px;
+    background: #FFFFFF;
+    border: 1px solid #DCE1EA;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px #0b226510;
+}
+
+/* Detalhes decorativos dos cantos */
+
+#containerJogo::before,
+#containerJogo::after {
+    content: "";
+    position: absolute;
+    width: 42px;
+    height: 4px;
+    border-radius: 4px;
+    top: -1px;
+}
+
+#containerJogo::before {
+    left: 22px;
+    background: var(--red);
+}
+
+#containerJogo::after {
+    right: 22px;
+    background: var(--navy);
+}
+
+/* Identificação da área */
+
+.frame-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2px 3px 12px;
+    color: #8993A4;
+    font-size: 9px;
+    font-weight: bold;
+    letter-spacing: 1.8px;
+}
+
+.frame-label span:last-child {
+    color: var(--navy);
+}
+
+/* PAINEL */
+
+#painel {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    padding: 16px 18px;
+    margin-bottom: 12px;
+}
+
+.info small {
+    display: block;
+    color: var(--gray);
+    font-size: 9px;
+    font-weight: bold;
+    letter-spacing: 1.5px;
+    margin-bottom: 5px;
+}
+
+.info strong {
+    color: var(--navy);
+    font-size: 21px;
+    font-weight: 900;
+    font-variant-numeric: tabular-nums;
+}
+
+#vidas {
+    color: var(--red);
+    font-size: 17px;
+    letter-spacing: 2px;
+    white-space: nowrap;
+}
+
+/* ÁREA DE JOGO */
+
+#jogo {
+    width: 600px;
+    max-width: 100%;
+    height: 400px;
+    position: relative;
+    overflow: hidden;
+    background: #F8F9FC;
+    border: 2px solid var(--navy);
+    border-radius: 9px;
+    box-shadow: 0 3px 8px #0b226510;
+
+    background-image:
+        linear-gradient(#0b226508 1px, transparent 1px),
+        linear-gradient(90deg, #0b226508 1px, transparent 1px);
+    background-size: 30px 30px;
+}
+
+/* BOLA */
+
+#bola {
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    border: 3px solid var(--navy);
+    border-radius: 50%;
+    background: #0B226508;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 2;
+    box-shadow: 0 0 0 5px #0b226508;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+/* JOGADOR */
+
+#jogador {
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    background: var(--red);
+    border: 2px solid #751024;
+    border-radius: 4px;
+    z-index: 5;
+    box-shadow: 0 2px 5px #a7193040;
+}
+
+.vida {
+    position: absolute;
+    border: 1px solid white;
+    pointer-events: none;
+}
+
+#vida1 { inset: 8%; }
+#vida2 { inset: 25%; }
+#vida3 { inset: 42%; }
+
+#qte {
+    color: var(--navy);
+    font-size: 32px;
+    font-weight: 900;
+    user-select: none;
+    pointer-events: none;
+}
+
+#mensagem {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 36px;
+    font-weight: bold;
+    z-index: 10;
+    pointer-events: none;
+}
+
+/* MENU */
+
+#telaMenu {
+    position: absolute;
+    inset: 0;
+    background: #071943E8;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+    color: white;
+}
+
+.menuConteudo {
+    padding: 25px;
+    max-width: 420px;
+}
+
+.menuFaixa {
+    width: 42px;
+    height: 5px;
+    background: var(--red);
+    margin: 0 auto 18px;
+    border-radius: 5px;
+}
+
+.menuConteudo h2 {
+    font-size: 27px;
+    font-weight: 900;
+    letter-spacing: 1px;
+    margin: 0 0 14px;
+}
+
+.menuConteudo p {
+    color: #D4DBEA;
+    font-size: 14px;
+    line-height: 1.7;
+}
+
+.menuEtiqueta {
+    color: #C5D2F0;
+    font-size: 10px;
+    letter-spacing: 3px;
+    font-weight: bold;
+    margin-bottom: 12px;
+}
+
+.botao {
+    border: none;
+    background: var(--red);
+    color: white;
+    padding: 14px 38px;
+    font-size: 13px;
+    font-weight: 900;
+    letter-spacing: 2px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 15px;
+    transition: background 0.2s, transform 0.2s;
+}
+
+.botao:hover {
+    background: #C52843;
+    transform: translateY(-2px);
+}
+
+#menuResultados {
+    display: none;
+}
+
+#resultadoPontos,
+#resultadoTempo {
+    font-size: 17px;
+    font-weight: bold;
+    margin: 15px;
+    color: white;
+}
+
+/* RODAPÉ EXTERNO */
+
+.rodape {
+    margin-top: 12px;
+    padding: 12px 3px 1px;
+    border-top: 1px solid #E5E8EE;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #7D8799;
+    font-size: 9px;
+    font-weight: bold;
+    letter-spacing: 1.3px;
+}
+
+.rodape strong {
+    color: var(--navy);
+}
+
+.indicador {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.indicador i {
+    display: block;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #31A879;
+}
+
+@media (max-width: 620px) {
+    body {
+        padding: 20px 12px;
+    }
+
+    .marca h1 {
+        font-size: 15px;
+    }
+
+    #containerJogo {
+        padding: 9px;
+    }
+
+    #jogo {
+        height: auto;
+        aspect-ratio: 3 / 2;
+    }
+
+    #painel {
+        padding: 12px;
+        gap: 8px;
+    }
+
+    .info strong {
+        font-size: 16px;
+    }
+
+    #vidas {
+        font-size: 14px;
+    }
+
+    .rodape {
+        font-size: 8px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<header>
+    <div class="marca">
+        <div class="simbolo">WP</div>
+        <div>
+            <h1>WASD PULSE</h1>
+            <p>REFLEX & COORDINATION</p>
+        </div>
+    </div>
+
+    <div class="etiqueta">TRAINING MODE</div>
+</header>
+
+<div id="containerJogo">
+
+    <div class="frame-label">
+        <span>FIELD 01 / REACTION TEST</span>
+        <span>TRAINING FACILITY</span>
+    </div>
+
+    <div id="painel">
+        <div class="info">
+            <small>SCORE</small>
+            <strong id="pontos">0</strong>
+        </div>
+
+        <div class="info">
+            <small>TIME</small>
+            <strong><span id="tempo">0.0</span>s</strong>
+        </div>
+
+        <div class="info">
+            <small>INSIDE TIME</small>
+            <strong><span id="tempoDentro">0.0</span>s</strong>
+        </div>
+
+        <div id="vidas">♥ ♥ ♥</div>
+    </div>
+
+    <div id="jogo">
+
+        <div id="bola">
+            <div id="qte"></div>
+        </div>
+
+        <div id="jogador">
+            <div class="vida" id="vida1"></div>
+            <div class="vida" id="vida2"></div>
+            <div class="vida" id="vida3"></div>
+        </div>
+
+        <div id="mensagem"></div>
+
+        <div id="telaMenu">
+
+            <div class="menuConteudo" id="menuInicial">
+                <div class="menuFaixa"></div>
+                <div class="menuEtiqueta">TRAINING SESSION</div>
+                <h2>READY TO PLAY?</h2>
+
+                <p>
+                    Use W, A, S e D para movimentar o jogador.
+                    Acompanhe o alvo e pressione os comandos
+                    indicados na tela.
+                </p>
+
+                <p>
+                    Acerte os comandos enquanto estiver
+                    dentro do alvo para marcar pontos.
+                </p>
+
+                <button class="botao" id="botaoPlay">START GAME</button>
+            </div>
+
+            <div class="menuConteudo" id="menuResultados">
+                <div class="menuFaixa"></div>
+                <div class="menuEtiqueta">SESSION COMPLETE</div>
+                <h2>GAME OVER</h2>
+
+                <div id="resultadoPontos">Pontos: 0</div>
+                <div id="resultadoTempo">Tempo dentro: 0.0s</div>
+
+                <button class="botao" id="botaoReiniciar">
+                    PLAY AGAIN
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="rodape">
+        <div class="indicador">
+            <i></i>
+            <span>SYSTEM READY</span>
+        </div>
+
+        <strong>FOCUS. SPEED. PRECISION.</strong>
+    </div>
+
+</div>
+
+<script>
+const jogo = document.getElementById("jogo");
+const bola = document.getElementById("bola");
+const jogador = document.getElementById("jogador");
+const qte = document.getElementById("qte");
+const mensagem = document.getElementById("mensagem");
+
+const pontosElemento = document.getElementById("pontos");
+const tempoElemento = document.getElementById("tempo");
+const tempoDentroElemento = document.getElementById("tempoDentro");
+const vidasElemento = document.getElementById("vidas");
+
+const telaMenu = document.getElementById("telaMenu");
+const menuInicial = document.getElementById("menuInicial");
+const menuResultados = document.getElementById("menuResultados");
+
+const resultadoPontos = document.getElementById("resultadoPontos");
+const resultadoTempo = document.getElementById("resultadoTempo");
+
+const botaoPlay = document.getElementById("botaoPlay");
+const botaoReiniciar = document.getElementById("botaoReiniciar");
+
+const tamanhoJogador = 30;
+const tamanhoBolaInicial = 180;
+const tamanhoBolaMinimo = 90;
+const tempoParaEncolher = 60;
+
+const teclas = {};
+
+let x = 50;
+let y = 50;
+
+let bolaX = 200;
+let bolaY = 100;
+let tamanhoBola = tamanhoBolaInicial;
+
+let velocidadeX = 0;
+let velocidadeY = 0;
+
+let pontos = 0;
+let vidas = 3;
+
+let tempoPartida = 0;
+let tempoDentro = 0;
+
+let dentro = false;
+let fimDeJogo = true;
+
+let ultimoFrame = 0;
+let ultimoQTE = 0;
+let limiteQTE = 0;
+
+let qteAtual = null;
+let qteAtivo = false;
+
+let proximoMovimento = 0;
+let direcaoBola = { x: 1, y: 0 };
+
+let ultimoFeedback = 0;
+let animacaoAtual = null;
+
+function velocidadeDoJogador() {
+    return Math.min(3 + tempoPartida * 0.0083, 3.5);
+}
+
+function velocidadeDaBola() {
+    return Math.min(
+        1 + tempoPartida * 0.04,
+        velocidadeDoJogador(),
+        3.5
+    );
+}
+
+function escolherMovimento() {
+    const movimentos = [
+        { x: 1, y: 0 },
+        { x: -1, y: 0 },
+        { x: 0, y: 1 },
+        { x: 0, y: -1 },
+        { x: 1, y: 1 },
+        { x: -1, y: 1 },
+        { x: 1, y: -1 },
+        { x: -1, y: -1 },
+        { x: 0.5, y: 1 },
+        { x: -0.5, y: 1 },
+        { x: 0.5, y: -1 },
+        { x: -0.5, y: -1 }
+    ];
+
+    const movimento = movimentos[
+        Math.floor(Math.random() * movimentos.length)
+    ];
+
+    const modulo = Math.hypot(movimento.x, movimento.y);
+
+    direcaoBola = {
+        x: movimento.x / modulo,
+        y: movimento.y / modulo
+    };
+
+    proximoMovimento = tempoPartida +
+        1.5 + Math.random() * 2;
+}
+
+function moverBola(delta) {
+    if (tempoPartida >= proximoMovimento) {
+        escolherMovimento();
+    }
+
+    const velocidade = velocidadeDaBola();
+
+    velocidadeX = direcaoBola.x * velocidade;
+    velocidadeY = direcaoBola.y * velocidade;
+
+    bolaX += velocidadeX * delta * 60;
+    bolaY += velocidadeY * delta * 60;
+
+    const limiteX = jogo.clientWidth - tamanhoBola + 25;
+    const limiteY = jogo.clientHeight - tamanhoBola + 25;
+
+    if (bolaX < -25) {
+        bolaX = -25;
+        escolherMovimento();
+    }
+
+    if (bolaX > limiteX) {
+        bolaX = limiteX;
+        escolherMovimento();
+    }
+
+    if (bolaY < -25) {
+        bolaY = -25;
+        escolherMovimento();
+    }
+
+    if (bolaY > limiteY) {
+        bolaY = limiteY;
+        escolherMovimento();
+    }
+
+    bola.style.left = bolaX + "px";
+    bola.style.top = bolaY + "px";
+}
+
+function atualizarDificuldade() {
+    const progresso = Math.min(
+        tempoPartida / tempoParaEncolher,
+        1
+    );
+
+    const novoTamanho =
+        tamanhoBolaInicial -
+        (tamanhoBolaInicial - tamanhoBolaMinimo) * progresso;
+
+    const diferenca = tamanhoBola - novoTamanho;
+
+    bolaX += diferenca / 2;
+    bolaY += diferenca / 2;
+
+    tamanhoBola = novoTamanho;
+
+    bola.style.width = tamanhoBola + "px";
+    bola.style.height = tamanhoBola + "px";
+}
+
+function moverJogador(delta) {
+    const velocidade = velocidadeDoJogador();
+    const passo = velocidade * delta * 60;
+
+    if (teclas["w"]) y -= passo;
+    if (teclas["s"]) y += passo;
+    if (teclas["a"]) x -= passo;
+    if (teclas["d"]) x += passo;
+
+    x = Math.max(0, Math.min(
+        x,
+        jogo.clientWidth - tamanhoJogador
+    ));
+
+    y = Math.max(0, Math.min(
+        y,
+        jogo.clientHeight - tamanhoJogador
+    ));
+
+    jogador.style.left = x + "px";
+    jogador.style.top = y + "px";
+}
+
+function verificarDentro() {
+    const raio = tamanhoBola / 2 - 3;
+
+    const centroBolaX = bolaX + tamanhoBola / 2;
+    const centroBolaY = bolaY + tamanhoBola / 2;
+
+    const pontoMaisProximoX = Math.max(
+        x,
+        Math.min(centroBolaX, x + tamanhoJogador)
+    );
+
+    const pontoMaisProximoY = Math.max(
+        y,
+        Math.min(centroBolaY, y + tamanhoJogador)
+    );
+
+    const distancia = Math.hypot(
+        centroBolaX - pontoMaisProximoX,
+        centroBolaY - pontoMaisProximoY
+    );
+
+    return distancia <= raio;
+}
+
+function atualizarAparencia() {
+    if (dentro) {
+        bola.style.borderColor = "#A71930";
+        bola.style.boxShadow = "0 0 0 5px #A7193020";
+        qte.style.color = "#A71930";
+    } else {
+        bola.style.borderColor = "#0B2265";
+        bola.style.boxShadow = "0 0 0 5px #0B226510";
+        qte.style.color = "#0B2265";
+    }
+}
+
+function atualizarVidas() {
+    vidasElemento.textContent =
+        "♥ ".repeat(vidas).trim();
+
+    document.getElementById("vida1").style.display =
+        vidas >= 1 ? "block" : "none";
+
+    document.getElementById("vida2").style.display =
+        vidas >= 2 ? "block" : "none";
+
+    document.getElementById("vida3").style.display =
+        vidas >= 3 ? "block" : "none";
+}
+
+function mostrarFeedback(texto, cor) {
+    mensagem.textContent = texto;
+    mensagem.style.color = cor;
+
+    clearTimeout(ultimoFeedback);
+
+    ultimoFeedback = setTimeout(() => {
+        mensagem.textContent = "";
+    }, 500);
+}
+
+function perderVida() {
+    vidas--;
+    atualizarVidas();
+
+    mostrarFeedback("✕", "#A71930");
+
+    if (vidas <= 0) {
+        encerrarJogo();
+    }
+}
+
+function escolherQTE() {
+    const opcoes = ["SHIFT", "Q", "R", "SPACE"];
+
+    const disponiveis = opcoes.filter(tecla => {
+        if (tecla === "R" && velocidadeX > 0) return false;
+        if (tecla === "Q" && velocidadeX < 0) return false;
+        return true;
+    });
+
+    return disponiveis[
+        Math.floor(Math.random() * disponiveis.length)
+    ];
+}
+
+function criarQTE() {
+    if (fimDeJogo || qteAtivo) return;
+
+    qteAtual = escolherQTE();
+    qteAtivo = true;
+
+    qte.textContent = qteAtual;
+    limiteQTE = tempoPartida + 2.5;
+}
+
+function esconderQTE() {
+    qteAtivo = false;
+    qteAtual = null;
+    qte.textContent = "";
+}
+
+function verificarQTE(tecla) {
+    if (!qteAtivo || fimDeJogo) return;
+
+    if (tecla.toUpperCase() === qteAtual) {
+        esconderQTE();
+
+        if (dentro) {
+            pontos++;
+            pontosElemento.textContent = pontos;
+        }
+
+        mostrarFeedback("✓", "#A71930");
+        ultimoQTE = tempoPartida;
+    } else {
+        esconderQTE();
+        perderVida();
+        ultimoQTE = tempoPartida;
+    }
+}
+
+function atualizarQTE() {
+    if (qteAtivo) {
+        if (tempoPartida >= limiteQTE) {
+            esconderQTE();
+            perderVida();
+            ultimoQTE = tempoPartida;
+        }
+
+        return;
+    }
+
+    if (tempoPartida - ultimoQTE >= 3) {
+        criarQTE();
+    }
+}
+
+function encerrarJogo() {
+    fimDeJogo = true;
+    esconderQTE();
+
+    resultadoPontos.textContent = "Pontos: " + pontos;
+
+    resultadoTempo.textContent =
+        "Tempo dentro: " + tempoDentro.toFixed(1) + "s";
+
+    menuInicial.style.display = "none";
+    menuResultados.style.display = "block";
+    telaMenu.style.display = "flex";
+}
+
+function atualizar(delta) {
+    tempoPartida += delta;
+
+    moverJogador(delta);
+    atualizarDificuldade();
+    moverBola(delta);
+
+    dentro = verificarDentro();
+
+    if (dentro) {
+        tempoDentro += delta;
+    }
+
+    atualizarAparencia();
+    atualizarQTE();
+
+    pontosElemento.textContent = pontos;
+    tempoElemento.textContent = tempoPartida.toFixed(1);
+    tempoDentroElemento.textContent = tempoDentro.toFixed(1);
+}
+
+function loop(timestamp) {
+    if (fimDeJogo) return;
+
+    if (!ultimoFrame) ultimoFrame = timestamp;
+
+    const delta = Math.min(
+        (timestamp - ultimoFrame) / 1000,
+        0.05
+    );
+
+    ultimoFrame = timestamp;
+
+    atualizar(delta);
+
+    if (!fimDeJogo) {
+        animacaoAtual = requestAnimationFrame(loop);
+    }
+}
+
+function reiniciarJogo() {
+    cancelAnimationFrame(animacaoAtual);
+
+    x = 50;
+    y = 50;
+
+    tamanhoBola = tamanhoBolaInicial;
+    bolaX = 200;
+    bolaY = 100;
+
+    velocidadeX = 0;
+    velocidadeY = 0;
+
+    direcaoBola = { x: 1, y: 0 };
+    proximoMovimento = 0;
+
+    pontos = 0;
+    vidas = 3;
+
+    tempoPartida = 0;
+    tempoDentro = 0;
+
+    dentro = false;
+    fimDeJogo = false;
+
+    ultimoFrame = 0;
+    ultimoQTE = 0;
+
+    qteAtivo = false;
+    qteAtual = null;
+
+    mensagem.textContent = "";
+
+    clearTimeout(ultimoFeedback);
+
+    Object.keys(teclas).forEach(tecla => {
+        teclas[tecla] = false;
+    });
+
+    jogador.style.left = x + "px";
+    jogador.style.top = y + "px";
+
+    bola.style.left = bolaX + "px";
+    bola.style.top = bolaY + "px";
+    bola.style.width = tamanhoBola + "px";
+    bola.style.height = tamanhoBola + "px";
+
+    pontosElemento.textContent = "0";
+    tempoElemento.textContent = "0.0";
+    tempoDentroElemento.textContent = "0.0";
+
+    atualizarVidas();
+    atualizarAparencia();
+    esconderQTE();
+
+    menuInicial.style.display = "block";
+    menuResultados.style.display = "none";
+    telaMenu.style.display = "none";
+
+    animacaoAtual = requestAnimationFrame(loop);
+}
+
+document.addEventListener("keydown", event => {
+    const tecla = event.key.toLowerCase();
+
+    if (["w", "a", "s", "d", " ", "shift"].includes(tecla)) {
+        event.preventDefault();
+    }
+
+    if (fimDeJogo) return;
+
+    if (!teclas[tecla]) {
+        if (
+            tecla === "q" ||
+            tecla === "r" ||
+            tecla === "shift" ||
+            tecla === " "
+        ) {
+            const nomeTecla = tecla === " "
+                ? "SPACE"
+                : tecla.toUpperCase();
+
+            verificarQTE(nomeTecla);
+        }
+    }
+
+    teclas[tecla] = true;
+});
+
+document.addEventListener("keyup", event => {
+    teclas[event.key.toLowerCase()] = false;
+});
+
+botaoPlay.addEventListener("click", reiniciarJogo);
+botaoReiniciar.addEventListener("click", reiniciarJogo);
+
+atualizarVidas();
+</script>
+
+</body>
+</html>

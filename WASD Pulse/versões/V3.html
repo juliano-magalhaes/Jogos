@@ -1,0 +1,764 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Treinador de Mão Esquerda FPS</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    background: #eeeeee;
+    background-image: radial-gradient(#d4d4d4 1px, transparent 1px);
+    background-size: 18px 18px;
+}
+
+#containerJogo {
+    width: 650px;
+    max-width: 95vw;
+}
+
+#titulo {
+    text-align: center;
+    color: #333333;
+    margin-bottom: 15px;
+    font-size: 25px;
+}
+
+#painel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 12px 16px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px #00000012;
+    color: #333333;
+    font-weight: bold;
+}
+
+#jogo {
+    position: relative;
+    width: 600px;
+    max-width: 100%;
+    height: 400px;
+    margin: auto;
+    overflow: hidden;
+    background: #fafafa;
+    background-image:
+        linear-gradient(#eeeeee 1px, transparent 1px),
+        linear-gradient(90deg, #eeeeee 1px, transparent 1px);
+    background-size: 25px 25px;
+    border: 2px solid #cccccc;
+    border-radius: 10px;
+    box-shadow: 0 3px 12px #00000012;
+}
+
+/* Bola */
+
+#bola {
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    border: 4px solid #008cff;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#bola.dentro {
+    border-color: #00c995;
+}
+
+/* QTE */
+
+#qte {
+    color: #008cff;
+    font-size: 34px;
+    font-weight: bold;
+    text-align: center;
+    user-select: none;
+}
+
+#bola.dentro #qte {
+    color: #00c995;
+}
+
+#qte.feedback {
+    font-size: 42px;
+}
+
+#qte.erro {
+    color: #ff4545 !important;
+}
+
+/* Cubo do jogador */
+
+#jogador {
+    position: absolute;
+    width: 30px;
+    height: 30px;
+    background: #ff4545;
+    border: 2px solid #991e1e;
+    border-radius: 4px;
+    z-index: 2;
+}
+
+/* Vidas desenhadas dentro do cubo */
+
+.vida {
+    position: absolute;
+    border: 1.5px solid;
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+#vida1 {
+    inset: 2px;
+    border-color: #ffffff;
+}
+
+#vida2 {
+    inset: 6px;
+    border-color: #ffffff;
+}
+
+#vida3 {
+    inset: 10px;
+    border-color: #ffffff;
+}
+
+/* Status */
+
+#status {
+    min-height: 30px;
+    margin-top: 12px;
+    text-align: center;
+    color: #444444;
+    font-weight: bold;
+}
+
+/* Menus */
+
+.telaMenu {
+    position: absolute;
+    inset: 0;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: rgba(250, 250, 250, 0.94);
+    color: #333333;
+    text-align: center;
+    padding: 25px;
+}
+
+.telaMenu h2 {
+    font-size: 32px;
+    margin: 0 0 12px;
+    color: #333333;
+}
+
+.telaMenu p {
+    color: #666666;
+    line-height: 1.5;
+    max-width: 390px;
+    margin: 5px 0;
+}
+
+.botaoMenu {
+    margin-top: 20px;
+    padding: 12px 40px;
+    border: none;
+    border-radius: 7px;
+    background: #008cff;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.botaoMenu:hover {
+    background: #0072d1;
+    transform: scale(1.04);
+}
+
+#menuResultados {
+    display: none;
+}
+
+.resultado {
+    margin: 8px 0;
+    font-size: 19px;
+}
+
+@media (max-width: 620px) {
+    #jogo {
+        height: auto;
+        aspect-ratio: 3 / 2;
+    }
+
+    #painel {
+        font-size: 13px;
+        padding: 10px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="containerJogo">
+
+    <h1 id="titulo">Treinador de Mão Esquerda FPS</h1>
+
+    <div id="painel">
+        <span id="pontuacao">Pontos: 0</span>
+        <span id="vidas">Vidas: ♥ ♥ ♥</span>
+        <span id="tempo">Tempo: 0s</span>
+    </div>
+
+    <div id="jogo">
+
+        <div id="bola">
+            <div id="qte"></div>
+        </div>
+
+        <div id="jogador">
+            <div class="vida" id="vida1"></div>
+            <div class="vida" id="vida2"></div>
+            <div class="vida" id="vida3"></div>
+        </div>
+
+        <!-- Menu inicial -->
+
+        <div class="telaMenu" id="menuInicial">
+            <h2>Treinador de Mão Esquerda</h2>
+            <p>Acompanhe a bola, mantenha o cubo dentro dela e pressione as teclas no momento certo.</p>
+            <p>Use W, A, S e D para movimentar o cubo.</p>
+            <button class="botaoMenu" id="botaoPlay">PLAY</button>
+        </div>
+
+        <!-- Menu de resultados -->
+
+        <div class="telaMenu" id="menuResultados">
+            <h2>Fim de jogo!</h2>
+
+            <div class="resultado" id="resultadoPontos">
+                Pontuação: 0
+            </div>
+
+            <div class="resultado" id="resultadoTempo">
+                Tempo dentro da bola: 0s
+            </div>
+
+            <button class="botaoMenu" id="botaoReiniciar">
+                JOGAR NOVAMENTE
+            </button>
+        </div>
+
+    </div>
+
+    <div id="status">Clique em PLAY para começar.</div>
+
+</div>
+
+<script>
+const jogo = document.getElementById("jogo");
+const bola = document.getElementById("bola");
+const jogador = document.getElementById("jogador");
+const qte = document.getElementById("qte");
+
+const pontuacaoTexto = document.getElementById("pontuacao");
+const vidasTexto = document.getElementById("vidas");
+const tempoTexto = document.getElementById("tempo");
+const statusTexto = document.getElementById("status");
+
+const menuInicial = document.getElementById("menuInicial");
+const menuResultados = document.getElementById("menuResultados");
+
+const resultadoPontos = document.getElementById("resultadoPontos");
+const resultadoTempo = document.getElementById("resultadoTempo");
+
+const botaoPlay = document.getElementById("botaoPlay");
+const botaoReiniciar = document.getElementById("botaoReiniciar");
+
+const vidasVisuais = [
+    document.getElementById("vida1"),
+    document.getElementById("vida2"),
+    document.getElementById("vida3")
+];
+
+// Dimensões
+
+const tamanhoBola = 180;
+const tamanhoJogador = 30;
+
+// Posições
+
+let bolaX = 210;
+let bolaY = 110;
+
+let x = 285;
+let y = 185;
+
+// Movimento da bola
+
+let velocidadeX = 0;
+let velocidadeY = 0;
+
+const movimentos = [
+    { x: 2.5, y: 0 },
+    { x: -2.5, y: 0 },
+    { x: 0, y: 2.5 },
+    { x: 0, y: -2.5 },
+    { x: 2, y: 1.5 },
+    { x: -2, y: 1.5 },
+    { x: 2, y: -1.5 },
+    { x: -2, y: -1.5 },
+    { x: 0, y: 2.5 },
+    { x: 0, y: -2.5 }
+];
+
+let proximoMovimento = 0;
+
+// Aceleração progressiva
+
+const velocidadeInicial = 1;
+const aceleracao = 0.025;
+const multiplicadorMaximo = 1.7;
+
+let multiplicadorVelocidade = velocidadeInicial;
+
+// Jogador
+
+const teclas = {};
+const velocidadeJogador = 3;
+
+// Partida
+
+let pontos = 0;
+let vidas = 3;
+
+let tempoDentro = 0;
+let tempoPartida = 0;
+
+let jogoIniciado = false;
+let fimDeJogo = false;
+
+let anterior = 0;
+
+// QTE
+
+const teclasQTE = ["SHIFT", "Q", "R", "SPACE"];
+
+let qteAtivo = false;
+let teclaCorreta = "";
+let tempoQTE = 0;
+
+let proximoQTE = 5;
+const duracaoQTE = 2.5;
+const intervaloQTE = 3;
+
+// Sorteia movimento da bola
+
+function escolherMovimento() {
+    const movimento =
+        movimentos[Math.floor(Math.random() * movimentos.length)];
+
+    velocidadeX = movimento.x;
+    velocidadeY = movimento.y;
+
+    proximoMovimento = tempoPartida +
+        1.5 + Math.random() * 2;
+}
+
+// Sorteia a tecla do QTE
+
+function escolherQTE() {
+    let opcoes = [...teclasQTE];
+
+    if (velocidadeX > 0) {
+        opcoes = opcoes.filter(tecla => tecla !== "R");
+    }
+
+    if (velocidadeX < 0) {
+        opcoes = opcoes.filter(tecla => tecla !== "Q");
+    }
+
+    return opcoes[Math.floor(Math.random() * opcoes.length)];
+}
+
+// Verifica se o jogador está dentro da bola
+
+function verificarDentro() {
+    const centroBolaX = bolaX + 90;
+    const centroBolaY = bolaY + 90;
+
+    const pontoMaisProximoX = Math.max(
+        x,
+        Math.min(centroBolaX, x + tamanhoJogador)
+    );
+
+    const pontoMaisProximoY = Math.max(
+        y,
+        Math.min(centroBolaY, y + tamanhoJogador)
+    );
+
+    const distancia = Math.hypot(
+        centroBolaX - pontoMaisProximoX,
+        centroBolaY - pontoMaisProximoY
+    );
+
+    return distancia <= 87;
+}
+
+// Atualiza as vidas
+
+function atualizarVidas() {
+    vidasVisuais.forEach((vida, indice) => {
+        vida.style.display = indice < vidas ? "block" : "none";
+    });
+
+    vidasTexto.textContent =
+        "Vidas: " + "♥ ".repeat(vidas);
+}
+
+// Atualiza a aparência
+
+function atualizarVisual() {
+    jogador.style.left = x + "px";
+    jogador.style.top = y + "px";
+
+    bola.style.left = bolaX + "px";
+    bola.style.top = bolaY + "px";
+
+    const dentro = verificarDentro();
+
+    bola.classList.toggle("dentro", dentro);
+
+    pontuacaoTexto.textContent = "Pontos: " + pontos;
+
+    tempoTexto.textContent =
+        "Tempo: " + Math.floor(tempoPartida) + "s";
+}
+
+// Perde uma vida
+
+function perderVida(mensagem) {
+    vidas--;
+
+    atualizarVidas();
+
+    statusTexto.textContent = mensagem;
+
+    if (vidas <= 0) {
+        encerrarJogo();
+    }
+}
+
+// Encerra a partida
+
+function encerrarJogo() {
+    fimDeJogo = true;
+    jogoIniciado = false;
+
+    qteAtivo = false;
+    qte.textContent = "";
+
+    resultadoPontos.textContent =
+        "Pontuação: " + pontos;
+
+    resultadoTempo.textContent =
+        "Tempo dentro da bola: " +
+        tempoDentro.toFixed(1) + "s";
+
+    menuResultados.style.display = "flex";
+
+    statusTexto.textContent = "Partida encerrada.";
+}
+
+// Inicia um QTE
+
+function iniciarQTE() {
+    if (qteAtivo || fimDeJogo) return;
+
+    teclaCorreta = escolherQTE();
+
+    qteAtivo = true;
+    tempoQTE = duracaoQTE;
+
+    qte.classList.remove("feedback", "erro");
+    qte.textContent = teclaCorreta;
+
+    proximoQTE = tempoPartida + intervaloQTE;
+}
+
+// Finaliza um QTE
+
+function finalizarQTE(acertou) {
+    qteAtivo = false;
+
+    qte.classList.add("feedback");
+
+    if (acertou) {
+        qte.textContent = "✓";
+
+        if (verificarDentro()) {
+            pontos++;
+            pontuacaoTexto.textContent = "Pontos: " + pontos;
+            statusTexto.textContent = "Boa! +1 ponto";
+        } else {
+            statusTexto.textContent =
+                "Acertou, mas estava fora da bola!";
+        }
+
+    } else {
+        qte.textContent = "✗";
+        qte.classList.add("erro");
+
+        perderVida("Tecla errada!");
+    }
+
+    setTimeout(() => {
+        if (!qteAtivo) {
+            qte.textContent = "";
+            qte.classList.remove("feedback", "erro");
+        }
+    }, 500);
+}
+
+// Movimento do jogador
+
+function moverJogador() {
+    if (teclas["w"]) y -= velocidadeJogador;
+    if (teclas["s"]) y += velocidadeJogador;
+    if (teclas["a"]) x -= velocidadeJogador;
+    if (teclas["d"]) x += velocidadeJogador;
+
+    x = Math.max(0, Math.min(
+        jogo.clientWidth - tamanhoJogador, x
+    ));
+
+    y = Math.max(0, Math.min(
+        jogo.clientHeight - tamanhoJogador, y
+    ));
+}
+
+// Movimento da bola
+
+function moverBola(delta) {
+    const limiteBolaX = jogo.clientWidth - tamanhoBola + 25;
+    const limiteBolaY = jogo.clientHeight - tamanhoBola + 25;
+
+    bolaX += velocidadeX * multiplicadorVelocidade * delta * 60;
+    bolaY += velocidadeY * multiplicadorVelocidade * delta * 60;
+
+    if (bolaX < -25) {
+        bolaX = -25;
+        velocidadeX = Math.abs(velocidadeX);
+    }
+
+    if (bolaX > limiteBolaX) {
+        bolaX = limiteBolaX;
+        velocidadeX = -Math.abs(velocidadeX);
+    }
+
+    if (bolaY < -25) {
+        bolaY = -25;
+        velocidadeY = Math.abs(velocidadeY);
+    }
+
+    if (bolaY > limiteBolaY) {
+        bolaY = limiteBolaY;
+        velocidadeY = -Math.abs(velocidadeY);
+    }
+}
+
+// Reinicia a partida
+
+function reiniciarJogo() {
+    pontos = 0;
+    vidas = 3;
+
+    tempoDentro = 0;
+    tempoPartida = 0;
+
+    bolaX = 210;
+    bolaY = 110;
+
+    x = 285;
+    y = 185;
+
+    velocidadeX = 0;
+    velocidadeY = 0;
+
+    multiplicadorVelocidade = velocidadeInicial;
+
+    qteAtivo = false;
+    teclaCorreta = "";
+    tempoQTE = 0;
+    proximoQTE = 5;
+
+    proximoMovimento = 0;
+
+    fimDeJogo = false;
+    jogoIniciado = true;
+
+    Object.keys(teclas).forEach(tecla => {
+        teclas[tecla] = false;
+    });
+
+    qte.textContent = "";
+    qte.classList.remove("feedback", "erro");
+
+    menuInicial.style.display = "none";
+    menuResultados.style.display = "none";
+
+    atualizarVidas();
+    atualizarVisual();
+
+    statusTexto.textContent = "Boa sorte!";
+
+    escolherMovimento();
+
+    anterior = performance.now();
+    requestAnimationFrame(atualizar);
+}
+
+// Loop principal
+
+function atualizar(agora) {
+    if (!jogoIniciado || fimDeJogo) return;
+
+    const delta = Math.min((agora - anterior) / 1000, 0.05);
+    anterior = agora;
+
+    tempoPartida += delta;
+
+    // Acelera até o limite máximo
+
+    multiplicadorVelocidade = Math.min(
+        velocidadeInicial + tempoPartida * aceleracao,
+        multiplicadorMaximo
+    );
+
+    if (tempoPartida >= proximoMovimento) {
+        escolherMovimento();
+    }
+
+    moverJogador();
+    moverBola(delta);
+
+    if (verificarDentro()) {
+        tempoDentro += delta;
+    }
+
+    // Inicia QTEs
+
+    if (!qteAtivo && tempoPartida >= proximoQTE) {
+        iniciarQTE();
+    }
+
+    // Tempo para responder
+
+    if (qteAtivo) {
+        tempoQTE -= delta;
+
+        if (tempoQTE <= 0) {
+            qteAtivo = false;
+
+            qte.textContent = "✗";
+            qte.classList.add("feedback", "erro");
+
+            perderVida("Tempo esgotado!");
+
+            proximoQTE = tempoPartida + intervaloQTE;
+
+            setTimeout(() => {
+                if (!qteAtivo) {
+                    qte.textContent = "";
+                    qte.classList.remove("feedback", "erro");
+                }
+            }, 500);
+        }
+    }
+
+    atualizarVisual();
+
+    if (!fimDeJogo) {
+        requestAnimationFrame(atualizar);
+    }
+}
+
+// Teclado
+
+document.addEventListener("keydown", function(event) {
+    const tecla = event.key.toLowerCase();
+
+    if ([
+        " ", "arrowup", "arrowdown", "arrowleft", "arrowright"
+    ].includes(tecla)) {
+        event.preventDefault();
+    }
+
+    if (!jogoIniciado || fimDeJogo) return;
+
+    if (["w", "a", "s", "d"].includes(tecla)) {
+        teclas[tecla] = true;
+    }
+
+    if (!qteAtivo) return;
+
+    let teclaPressionada = "";
+
+    if (event.code === "ShiftLeft" || event.code === "ShiftRight") {
+        teclaPressionada = "SHIFT";
+    } else if (event.code === "Space") {
+        teclaPressionada = "SPACE";
+    } else if (tecla === "q") {
+        teclaPressionada = "Q";
+    } else if (tecla === "r") {
+        teclaPressionada = "R";
+    }
+
+    if (!teclaPressionada) return;
+
+    if (teclaPressionada === teclaCorreta) {
+        finalizarQTE(true);
+    } else {
+        finalizarQTE(false);
+    }
+});
+
+document.addEventListener("keyup", function(event) {
+    teclas[event.key.toLowerCase()] = false;
+});
+
+// Botões
+
+botaoPlay.addEventListener("click", reiniciarJogo);
+botaoReiniciar.addEventListener("click", reiniciarJogo);
+
+// Estado inicial
+
+atualizarVidas();
+atualizarVisual();
+</script>
+
+</body>
+</html>

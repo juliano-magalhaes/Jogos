@@ -1,0 +1,765 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Treinador de Mão Esquerda FPS</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    padding: 25px 15px;
+    font-family: Arial, sans-serif;
+    background-color: #eeeeee;
+    background-image: radial-gradient(#d2d2d2 1px, transparent 1px);
+    background-size: 18px 18px;
+    color: #333;
+    text-align: center;
+}
+
+h1 {
+    font-size: 25px;
+    margin-bottom: 8px;
+}
+
+.subtitulo {
+    color: #777;
+    margin-bottom: 25px;
+    font-size: 14px;
+}
+
+#containerJogo {
+    width: 600px;
+    max-width: 100%;
+    margin: auto;
+}
+
+#painel {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+    padding: 12px 15px;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 3px 10px #00000012;
+    font-weight: bold;
+}
+
+#status {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#vidas {
+    color: #e34c4c;
+    letter-spacing: 3px;
+}
+
+#jogo {
+    width: 600px;
+    max-width: 100%;
+    height: 400px;
+    position: relative;
+    overflow: hidden;
+    background-color: #fafafa;
+    background-image:
+        linear-gradient(#e9e9e9 1px, transparent 1px),
+        linear-gradient(90deg, #e9e9e9 1px, transparent 1px);
+    background-size: 25px 25px;
+    border: 2px solid #d5d5d5;
+    border-radius: 12px;
+    box-shadow: 0 5px 18px #00000018;
+}
+
+#bola {
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    border: 4px solid #008cff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: border-color 0.15s;
+}
+
+#jogador {
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    background: #ed4545;
+    border: 2px solid #a52222;
+    border-radius: 5px;
+    z-index: 5;
+}
+
+.vida {
+    position: absolute;
+    border: 2px solid #fff;
+    pointer-events: none;
+}
+
+#vida1 {
+    inset: 8%;
+}
+
+#vida2 {
+    inset: 25%;
+}
+
+#vida3 {
+    inset: 42%;
+}
+
+#qte {
+    color: #008cff;
+    font-size: 34px;
+    font-weight: bold;
+    user-select: none;
+    pointer-events: none;
+    text-shadow: 0 1px 3px #ffffff;
+}
+
+#mensagem {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 34px;
+    font-weight: bold;
+    pointer-events: none;
+    z-index: 10;
+}
+
+#telaMenu {
+    position: absolute;
+    inset: 0;
+    background: #f7f7f7ee;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 20;
+}
+
+.menuConteudo {
+    padding: 25px;
+    max-width: 420px;
+}
+
+.menuConteudo h2 {
+    font-size: 27px;
+    margin: 0 0 12px;
+}
+
+.menuConteudo p {
+    line-height: 1.6;
+    color: #666;
+    font-size: 14px;
+}
+
+.botao {
+    border: none;
+    background: #1689e9;
+    color: white;
+    padding: 13px 35px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 7px;
+    cursor: pointer;
+    margin-top: 15px;
+}
+
+.botao:hover {
+    background: #0873ca;
+}
+
+#menuResultados {
+    display: none;
+}
+
+#resultadoPontos,
+#resultadoTempo {
+    font-size: 18px;
+    font-weight: bold;
+    margin: 12px;
+}
+
+@media (max-width: 620px) {
+    #jogo {
+        height: auto;
+        aspect-ratio: 3 / 2;
+    }
+
+    #painel {
+        font-size: 13px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<h1>Treinador de Mão Esquerda FPS</h1>
+<p class="subtitulo">Treine sua coordenação e seus reflexos</p>
+
+<div id="containerJogo">
+
+    <div id="painel">
+        <div id="status">
+            <span>Pontos: <span id="pontos">0</span></span>
+            <span>Tempo: <span id="tempo">0.0</span>s</span>
+            <span>Dentro: <span id="tempoDentro">0.0</span>s</span>
+        </div>
+
+        <div id="vidas">♥ ♥ ♥</div>
+    </div>
+
+    <div id="jogo">
+
+        <div id="bola">
+            <div id="qte"></div>
+        </div>
+
+        <div id="jogador">
+            <div class="vida" id="vida1"></div>
+            <div class="vida" id="vida2"></div>
+            <div class="vida" id="vida3"></div>
+        </div>
+
+        <div id="mensagem"></div>
+
+        <div id="telaMenu">
+            <div class="menuConteudo" id="menuInicial">
+                <h2>Pronto para treinar?</h2>
+                <p>
+                    Use <strong>W A S D</strong> para movimentar o cubo.
+                    Acompanhe a bola e pressione a tecla indicada
+                    quando o comando aparecer.
+                </p>
+                <p>
+                    Acerte os comandos enquanto estiver dentro
+                    da bola para marcar pontos.
+                </p>
+                <button class="botao" id="botaoPlay">PLAY</button>
+            </div>
+
+            <div class="menuConteudo" id="menuResultados">
+                <h2>Fim de jogo!</h2>
+                <p>Seu resultado:</p>
+                <div id="resultadoPontos">Pontos: 0</div>
+                <div id="resultadoTempo">Tempo dentro: 0.0s</div>
+                <button class="botao" id="botaoReiniciar">
+                    Jogar novamente
+                </button>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script>
+const jogo = document.getElementById("jogo");
+const bola = document.getElementById("bola");
+const jogador = document.getElementById("jogador");
+const qte = document.getElementById("qte");
+const mensagem = document.getElementById("mensagem");
+
+const pontosElemento = document.getElementById("pontos");
+const tempoElemento = document.getElementById("tempo");
+const tempoDentroElemento = document.getElementById("tempoDentro");
+const vidasElemento = document.getElementById("vidas");
+
+const telaMenu = document.getElementById("telaMenu");
+const menuInicial = document.getElementById("menuInicial");
+const menuResultados = document.getElementById("menuResultados");
+
+const resultadoPontos = document.getElementById("resultadoPontos");
+const resultadoTempo = document.getElementById("resultadoTempo");
+
+const botaoPlay = document.getElementById("botaoPlay");
+const botaoReiniciar = document.getElementById("botaoReiniciar");
+
+const tamanhoJogador = 30;
+
+const tamanhoBolaInicial = 180;
+const tamanhoBolaMinimo = 90;
+const tempoParaEncolher = 60;
+
+const teclas = {};
+
+let x = 50;
+let y = 50;
+
+let bolaX = 200;
+let bolaY = 100;
+let tamanhoBola = tamanhoBolaInicial;
+
+let velocidadeX = 0;
+let velocidadeY = 0;
+
+let pontos = 0;
+let vidas = 3;
+
+let tempoPartida = 0;
+let tempoDentro = 0;
+
+let dentro = false;
+let fimDeJogo = true;
+
+let ultimoFrame = 0;
+let ultimoQTE = 0;
+let limiteQTE = 0;
+
+let qteAtual = null;
+let qteAtivo = false;
+
+let proximoMovimento = 0;
+let direcaoBola = { x: 1, y: 0 };
+
+let ultimoFeedback = 0;
+let animacaoAtual = null;
+
+// Velocidade do jogador: começa em 3 e chega a 3.5.
+function velocidadeDoJogador() {
+    return Math.min(3 + tempoPartida * 0.0083, 3.5);
+}
+
+// A bola começa devagar e acelera até alcançar a velocidade do cubo.
+function velocidadeDaBola() {
+    const velocidadeJogador = velocidadeDoJogador();
+
+    return Math.min(
+        1 + tempoPartida * 0.04,
+        velocidadeJogador,
+        3.5
+    );
+}
+
+// Escolhe uma direção aleatória para a bola.
+// A direção é normalizada para que diagonais não sejam mais rápidas.
+function escolherMovimento() {
+    const movimentos = [
+        { x: 1, y: 0 },
+        { x: -1, y: 0 },
+        { x: 0, y: 1 },
+        { x: 0, y: -1 },
+        { x: 1, y: 1 },
+        { x: -1, y: 1 },
+        { x: 1, y: -1 },
+        { x: -1, y: -1 },
+        { x: 0.5, y: 1 },
+        { x: -0.5, y: 1 },
+        { x: 0.5, y: -1 },
+        { x: -0.5, y: -1 }
+    ];
+
+    let movimento = movimentos[
+        Math.floor(Math.random() * movimentos.length)
+    ];
+
+    const modulo = Math.hypot(movimento.x, movimento.y);
+
+    direcaoBola = {
+        x: movimento.x / modulo,
+        y: movimento.y / modulo
+    };
+
+    proximoMovimento = tempoPartida +
+        1.5 + Math.random() * 2;
+}
+
+function moverBola(delta) {
+    if (tempoPartida >= proximoMovimento) {
+        escolherMovimento();
+    }
+
+    const velocidade = velocidadeDaBola();
+
+    velocidadeX = direcaoBola.x * velocidade;
+    velocidadeY = direcaoBola.y * velocidade;
+
+    bolaX += velocidadeX * delta * 60;
+    bolaY += velocidadeY * delta * 60;
+
+    const limiteX = jogo.clientWidth - tamanhoBola + 25;
+    const limiteY = jogo.clientHeight - tamanhoBola + 25;
+
+    if (bolaX < -25) {
+        bolaX = -25;
+        escolherMovimento();
+    }
+
+    if (bolaX > limiteX) {
+        bolaX = limiteX;
+        escolherMovimento();
+    }
+
+    if (bolaY < -25) {
+        bolaY = -25;
+        escolherMovimento();
+    }
+
+    if (bolaY > limiteY) {
+        bolaY = limiteY;
+        escolherMovimento();
+    }
+
+    bola.style.left = bolaX + "px";
+    bola.style.top = bolaY + "px";
+}
+
+function atualizarDificuldade() {
+    const progresso = Math.min(
+        tempoPartida / tempoParaEncolher,
+        1
+    );
+
+    const novoTamanho =
+        tamanhoBolaInicial -
+        (tamanhoBolaInicial - tamanhoBolaMinimo) * progresso;
+
+    const diferenca = tamanhoBola - novoTamanho;
+
+    // Mantém o centro da bola aproximadamente no mesmo lugar.
+    bolaX += diferenca / 2;
+    bolaY += diferenca / 2;
+
+    tamanhoBola = novoTamanho;
+
+    bola.style.width = tamanhoBola + "px";
+    bola.style.height = tamanhoBola + "px";
+}
+
+function moverJogador(delta) {
+    const velocidade = velocidadeDoJogador();
+    const passo = velocidade * delta * 60;
+
+    if (teclas["w"]) y -= passo;
+    if (teclas["s"]) y += passo;
+    if (teclas["a"]) x -= passo;
+    if (teclas["d"]) x += passo;
+
+    x = Math.max(0, Math.min(
+        x,
+        jogo.clientWidth - tamanhoJogador
+    ));
+
+    y = Math.max(0, Math.min(
+        y,
+        jogo.clientHeight - tamanhoJogador
+    ));
+
+    jogador.style.left = x + "px";
+    jogador.style.top = y + "px";
+}
+
+function verificarDentro() {
+    const raio = tamanhoBola / 2 - 3;
+
+    const centroBolaX = bolaX + tamanhoBola / 2;
+    const centroBolaY = bolaY + tamanhoBola / 2;
+
+    const pontoMaisProximoX = Math.max(
+        x,
+        Math.min(centroBolaX, x + tamanhoJogador)
+    );
+
+    const pontoMaisProximoY = Math.max(
+        y,
+        Math.min(centroBolaY, y + tamanhoJogador)
+    );
+
+    const distancia = Math.hypot(
+        centroBolaX - pontoMaisProximoX,
+        centroBolaY - pontoMaisProximoY
+    );
+
+    return distancia <= raio;
+}
+
+function atualizarAparencia() {
+    if (dentro) {
+        bola.style.borderColor = "#00c995";
+        qte.style.color = "#00c995";
+    } else {
+        bola.style.borderColor = "#008cff";
+        qte.style.color = "#008cff";
+    }
+}
+
+function atualizarVidas() {
+    vidasElemento.textContent =
+        "♥ ".repeat(vidas).trim();
+
+    document.getElementById("vida1").style.display =
+        vidas >= 1 ? "block" : "none";
+
+    document.getElementById("vida2").style.display =
+        vidas >= 2 ? "block" : "none";
+
+    document.getElementById("vida3").style.display =
+        vidas >= 3 ? "block" : "none";
+}
+
+function perderVida() {
+    vidas--;
+    atualizarVidas();
+
+    mostrarFeedback("✕", "#ed4545");
+
+    if (vidas <= 0) {
+        encerrarJogo();
+    }
+}
+
+function mostrarFeedback(texto, cor) {
+    mensagem.textContent = texto;
+    mensagem.style.color = cor;
+
+    clearTimeout(ultimoFeedback);
+
+    ultimoFeedback = setTimeout(() => {
+        mensagem.textContent = "";
+    }, 500);
+}
+
+function escolherQTE() {
+    const opcoes = ["SHIFT", "Q", "R", "SPACE"];
+
+    const disponiveis = opcoes.filter(tecla => {
+        if (tecla === "R" && velocidadeX > 0) {
+            return false;
+        }
+
+        if (tecla === "Q" && velocidadeX < 0) {
+            return false;
+        }
+
+        return true;
+    });
+
+    return disponiveis[
+        Math.floor(Math.random() * disponiveis.length)
+    ];
+}
+
+function criarQTE() {
+    if (fimDeJogo || qteAtivo) return;
+
+    qteAtual = escolherQTE();
+    qteAtivo = true;
+
+    qte.textContent =
+        qteAtual === "SPACE" ? "SPACE" : qteAtual;
+
+    limiteQTE = tempoPartida + 2.5;
+}
+
+function esconderQTE() {
+    qteAtivo = false;
+    qteAtual = null;
+    qte.textContent = "";
+}
+
+function verificarQTE(tecla) {
+    if (!qteAtivo || fimDeJogo) return;
+
+    const teclaNormalizada = tecla.toUpperCase();
+
+    let teclaCorreta = qteAtual;
+
+    if (teclaNormalizada === teclaCorreta) {
+        esconderQTE();
+
+        if (dentro) {
+            pontos++;
+            pontosElemento.textContent = pontos;
+        }
+
+        mostrarFeedback("✓", "#00c995");
+
+        ultimoQTE = tempoPartida;
+    } else {
+        esconderQTE();
+        perderVida();
+
+        ultimoQTE = tempoPartida;
+    }
+}
+
+function atualizarQTE() {
+    if (qteAtivo) {
+        if (tempoPartida >= limiteQTE) {
+            esconderQTE();
+            perderVida();
+            ultimoQTE = tempoPartida;
+        }
+
+        return;
+    }
+
+    if (tempoPartida - ultimoQTE >= 3) {
+        criarQTE();
+    }
+}
+
+function encerrarJogo() {
+    fimDeJogo = true;
+    esconderQTE();
+
+    resultadoPontos.textContent = "Pontos: " + pontos;
+    resultadoTempo.textContent =
+        "Tempo dentro: " + tempoDentro.toFixed(1) + "s";
+
+    menuInicial.style.display = "none";
+    menuResultados.style.display = "block";
+    telaMenu.style.display = "flex";
+}
+
+function atualizar(delta) {
+    tempoPartida += delta;
+
+    moverJogador(delta);
+    atualizarDificuldade();
+    moverBola(delta);
+
+    dentro = verificarDentro();
+
+    if (dentro) {
+        tempoDentro += delta;
+    }
+
+    atualizarAparencia();
+    atualizarQTE();
+
+    pontosElemento.textContent = pontos;
+    tempoElemento.textContent = tempoPartida.toFixed(1);
+    tempoDentroElemento.textContent = tempoDentro.toFixed(1);
+}
+
+function loop(timestamp) {
+    if (fimDeJogo) return;
+
+    if (!ultimoFrame) ultimoFrame = timestamp;
+
+    const delta = Math.min(
+        (timestamp - ultimoFrame) / 1000,
+        0.05
+    );
+
+    ultimoFrame = timestamp;
+
+    atualizar(delta);
+
+    if (!fimDeJogo) {
+        animacaoAtual = requestAnimationFrame(loop);
+    }
+}
+
+function reiniciarJogo() {
+    cancelAnimationFrame(animacaoAtual);
+
+    x = 50;
+    y = 50;
+
+    tamanhoBola = tamanhoBolaInicial;
+    bolaX = 200;
+    bolaY = 100;
+
+    velocidadeX = 0;
+    velocidadeY = 0;
+
+    direcaoBola = { x: 1, y: 0 };
+    proximoMovimento = 0;
+
+    pontos = 0;
+    vidas = 3;
+
+    tempoPartida = 0;
+    tempoDentro = 0;
+
+    dentro = false;
+    fimDeJogo = false;
+
+    ultimoFrame = 0;
+    ultimoQTE = 0;
+
+    qteAtivo = false;
+    qteAtual = null;
+
+    mensagem.textContent = "";
+
+    clearTimeout(ultimoFeedback);
+
+    Object.keys(teclas).forEach(tecla => {
+        teclas[tecla] = false;
+    });
+
+    jogador.style.left = x + "px";
+    jogador.style.top = y + "px";
+
+    bola.style.left = bolaX + "px";
+    bola.style.top = bolaY + "px";
+    bola.style.width = tamanhoBola + "px";
+    bola.style.height = tamanhoBola + "px";
+
+    pontosElemento.textContent = "0";
+    tempoElemento.textContent = "0.0";
+    tempoDentroElemento.textContent = "0.0";
+
+    atualizarVidas();
+    atualizarAparencia();
+
+    esconderQTE();
+
+    telaMenu.style.display = "none";
+
+    animacaoAtual = requestAnimationFrame(loop);
+}
+
+document.addEventListener("keydown", event => {
+    const tecla = event.key.toLowerCase();
+
+    if (["w", "a", "s", "d", " ", "shift"].includes(tecla)) {
+        event.preventDefault();
+    }
+
+    if (fimDeJogo) return;
+
+    if (!teclas[tecla]) {
+        if (tecla === "q" || tecla === "r" ||
+            tecla === "shift" || tecla === " ") {
+
+            const nomeTecla = tecla === " "
+                ? "SPACE"
+                : tecla.toUpperCase();
+
+            verificarQTE(nomeTecla);
+        }
+    }
+
+    teclas[tecla] = true;
+});
+
+document.addEventListener("keyup", event => {
+    teclas[event.key.toLowerCase()] = false;
+});
+
+botaoPlay.addEventListener("click", reiniciarJogo);
+botaoReiniciar.addEventListener("click", reiniciarJogo);
+
+atualizarVidas();
+</script>
+
+</body>
+</html>
