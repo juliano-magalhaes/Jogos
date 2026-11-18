@@ -5,279 +5,80 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dodgeball</title>
-
 <style>
 * { box-sizing: border-box; }
-
-body {
-    margin: 0;
-    overflow: hidden;
-    background: #101820;
-    color: white;
-    font-family: Arial, sans-serif;
-}
-
+body { margin: 0; overflow: hidden; background: #101820; color: white; font-family: Arial, sans-serif; }
 canvas { display: block; }
-
-#hud {
-    position: fixed;
-    inset: 0;
-    pointer-events: none;
-}
-
-#crosshair {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 18px;
-    height: 18px;
-    transform: translate(-50%, -50%);
-}
-
-#crosshair::before, #crosshair::after {
-    content: "";
-    position: absolute;
-    background: white;
-    box-shadow: 0 0 5px #00c8ff;
-}
-
-#crosshair::before {
-    width: 2px;
-    height: 18px;
-    left: 8px;
-}
-
-#crosshair::after {
-    width: 18px;
-    height: 2px;
-    top: 8px;
-}
-
-#topHud {
-    position: absolute;
-    top: 18px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 12px;
-}
-
-.panel {
-    padding: 12px 20px;
-    background: rgba(5,12,20,.85);
-    border: 1px solid #344858;
-    text-align: center;
-    min-width: 120px;
-}
-
-.panel small {
-    display: block;
-    color: #8da5b8;
-    font-size: 10px;
-    letter-spacing: 2px;
-    margin-bottom: 5px;
-}
-
-.panel strong {
-    font-size: 22px;
-    color: #4ccaff;
-}
-
-#bottomHud {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    background: rgba(5,12,20,.85);
-    border: 1px solid #344858;
-    padding: 12px 18px;
-    line-height: 1.7;
-}
-
+#hud { position: fixed; inset: 0; pointer-events: none; }
+#crosshair { position: absolute; top: 50%; left: 50%; width: 18px; height: 18px; transform: translate(-50%, -50%); }
+#crosshair::before, #crosshair::after { content: ""; position: absolute; background: white; box-shadow: 0 0 5px #00c8ff; }
+#crosshair::before { width: 2px; height: 18px; left: 8px; }
+#crosshair::after { width: 18px; height: 2px; top: 8px; }
+#topHud { position: absolute; top: 18px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; }
+.panel { min-width: 105px; padding: 10px 14px; }
+.panel { padding: 12px 20px; background: rgba(5,12,20,.85); border: 1px solid #344858; text-align: center; min-width: 120px; }
+.panel small { display: block; color: #8da5b8; font-size: 10px; letter-spacing: 2px; margin-bottom: 5px; }
+.panel strong { font-size: 22px; color: #4ccaff; }
+#bottomHud { position: absolute; bottom: 20px; left: 20px; background: rgba(5,12,20,.85); border: 1px solid #344858; padding: 12px 18px; line-height: 1.7; }
 #bottomHud span { color: #4ccaff; }
-
-#chargeHud {
-    position: absolute;
-    left: 50%;
-    top: calc(50% + 34px);
-    transform: translateX(-50%);
-    width: 150px;
-    text-align: center;
-    font-size: 10px;
-    letter-spacing: 2px;
-    color: #b9eaff;
-    text-shadow: 0 1px 5px #000;
-    opacity: 0;
-    transition: opacity .12s;
-}
-
-#chargeTrack {
-    height: 6px;
-    margin-top: 7px;
-    background: rgba(5,12,20,.8);
-    border: 1px solid #547083;
-    overflow: hidden;
-}
-
-#chargeFill {
-    width: 0%;
-    height: 100%;
-    background: #ff9a35;
-    box-shadow: 0 0 10px #ff8b25;
-}
-
-#hint {
-    position: absolute;
-    bottom: 24px;
-    right: 24px;
-    color: white;
-    background: rgba(5,12,20,.8);
-    padding: 12px 18px;
-    border: 1px solid #344858;
-}
-
-#message {
-    position: absolute;
-    top: 25%;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 30px;
-    font-weight: bold;
-    letter-spacing: 3px;
-    text-shadow: 0 0 12px black;
-    opacity: 0;
-    transition: opacity .2s;
-}
-
-#overlay {
-    position: fixed;
-    inset: 0;
-    z-index: 10;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: rgba(3,8,14,.88);
-}
-
-#menu {
-    width: min(460px,90vw);
-    padding: 38px;
-    text-align: center;
-    background: #111d29;
-    border: 1px solid #36536b;
-    box-shadow: 0 0 45px rgba(0,130,200,.15);
-}
-
-h1 {
-    margin: 0;
-    font-size: 38px;
-    letter-spacing: 5px;
-    color: #4ccaff;
-}
-
-.subtitle {
-    color: #93a9b9;
-    letter-spacing: 3px;
-    font-size: 12px;
-    margin: 8px 0 25px;
-}
-
-#menu p {
-    color: #a9b8c4;
-    line-height: 1.6;
-}
-
-button {
-    margin-top: 18px;
-    padding: 14px 38px;
-    background: #087eb5;
-    color: white;
-    border: none;
-    font-weight: bold;
-    font-size: 16px;
-    letter-spacing: 2px;
-    cursor: pointer;
-}
-
+#chargeHud { position: absolute; left: 50%; top: calc(50% + 34px); transform: translateX(-50%); width: 150px; text-align: center; font-size: 10px; letter-spacing: 2px; color: #b9eaff; text-shadow: 0 1px 5px #000; opacity: 0; transition: opacity .12s; }
+#chargeTrack { height: 6px; margin-top: 7px; background: rgba(5,12,20,.8); border: 1px solid #547083; overflow: hidden; }
+#chargeFill { width: 0%; height: 100%; background: #ff9a35; box-shadow: 0 0 10px #ff8b25; }
+#hint { position: absolute; bottom: 24px; right: 24px; color: white; background: rgba(5,12,20,.8); padding: 12px 18px; border: 1px solid #344858; }
+#message { position: absolute; top: 25%; left: 50%; transform: translateX(-50%); font-size: 30px; font-weight: bold; letter-spacing: 3px; text-shadow: 0 0 12px black; opacity: 0; transition: opacity .2s; }
+#overlay { position: fixed; inset: 0; z-index: 10; display: flex; align-items: center; justify-content: center; background: rgba(3,8,14,.88); }
+#menu { width: min(460px,90vw); padding: 38px; text-align: center; background: #111d29; border: 1px solid #36536b; box-shadow: 0 0 45px rgba(0,130,200,.15); }
+h1 { margin: 0; font-size: 38px; letter-spacing: 5px; color: #4ccaff; }
+.subtitle { color: #93a9b9; letter-spacing: 3px; font-size: 12px; margin: 8px 0 25px; }
+#menu p { color: #a9b8c4; line-height: 1.6; }
+button { margin-top: 18px; padding: 14px 38px; background: #087eb5; color: white; border: none; font-weight: bold; font-size: 16px; letter-spacing: 2px; cursor: pointer; }
 button:hover { background: #13a9eb; }
-
-.controls {
-    margin-top: 25px;
-    color: #718899;
-    font-size: 12px;
-    line-height: 2;
-}
-
+.controls { margin-top: 25px; color: #718899; font-size: 12px; line-height: 2; }
 .hidden { display: none !important; }
 </style>
 </head>
-
 <body>
-
 <div id="hud">
     <div id="crosshair"></div>
     <div id="chargeHud">FORÇA DO ARREMESSO<div id="chargeTrack"><div id="chargeFill"></div></div></div>
-
     <div id="topHud">
-        <div class="panel">
-            <small>SUA VIDA</small>
-            <strong id="health">3</strong>
-        </div>
-        <div class="panel">
-            <small>ADVERSÁRIOS</small>
-            <strong id="enemies">3</strong>
-        </div>
-        <div class="panel">
-            <small>BOLAS</small>
-            <strong id="ballCount">0</strong>
-        </div>
+        <div class="panel"><small>SUA VIDA</small><strong id="health">3</strong></div>
+        <div class="panel"><small>SEU TIME</small><strong id="teamCount">3</strong></div>
+        <div class="panel"><small>ADVERSÁRIOS</small><strong id="enemies">3</strong></div>
+        <div class="panel"><small>BOLAS</small><strong id="ballCount">0</strong></div>
     </div>
-
     <div id="bottomHud">
         MOVIMENTO: <span>W A S D</span><br>
         PULAR: <span>ESPAÇO</span><br>
         PEGAR BOLA: <span>E</span><br>
         ARREMESSAR: <span>SEGURE E SOLTE O CLIQUE ESQUERDO</span>
     </div>
-
     <div id="hint">ENCONTRE UMA BOLA!</div>
     <div id="message"></div>
 </div>
-
 <div id="overlay">
     <div id="menu">
         <h1>DODGEBALL</h1>
         <div class="subtitle">FIRST PERSON ARENA</div>
-        <p id="menuDescription">
-            Enfrente três adversários controlados por IA.
-            Elimine todos para vencer!
-        </p>
+        <p id="menuDescription">Jogue em equipe: você e dois aliados contra três adversários. Elimine o time vermelho para vencer!</p>
         <button id="startButton">INICIAR PARTIDA</button>
         <div class="controls">
-            WASD — MOVIMENTAR<br>
-            ESPAÇO — PULAR<br>
-            MOUSE — OLHAR<br>
-            E — PEGAR BOLA<br>
-            CLIQUE ESQUERDO — ARREMESSAR<br>
-            ESC — PAUSAR
+            WASD — MOVIMENTAR<br>ESPAÇO — PULAR<br>MOUSE — OLHAR<br>
+            PARTIDA 3 VS 3 — VOCÊ + 2 ALIADOS<br>
+            E — PEGAR BOLA<br>CLIQUE ESQUERDO — ARREMESSAR<br>ESC — PAUSAR
         </div>
     </div>
 </div>
 
 <script type="module">
-import * as THREE from
-"https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
+import * as THREE from "https://cdn.jsdelivr.net/npm/three@0.180.0/build/three.module.js";
 
-// ======================================
 // CONFIGURAÇÃO
-// ======================================
-
 const scene = new THREE.Scene();
 scene.background = new THREE.Color(0x101820);
 scene.fog = new THREE.Fog(0x101820, 18, 55);
 
-const camera = new THREE.PerspectiveCamera(
-    75, window.innerWidth / window.innerHeight, 0.1, 100
-);
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 100);
 scene.add(camera);
 
 const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -288,56 +89,29 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.outputColorSpace = THREE.SRGBColorSpace;
 document.body.appendChild(renderer.domElement);
 
-// ======================================
 // VARIÁVEIS
-// ======================================
-
 const keys = {};
-
 const arena = { width: 24, depth: 18, centerLine: 0 };
 
 const player = {
-    x: 0,
-    z: 4.5,
-    height: 1.7,
-    speed: 7,
-    health: 3,
-    hasBall: false,
-    alive: true,
-
-    // NOVO: física do pulo
-    jumpHeight: 0,
-    jumpVelocity: 0,
-    jumpCooldown: 0,
-    grounded: true
+    x: 0, z: 4.5, height: 1.7, speed: 7,
+    health: 3, hasBall: false, alive: true,
+    jumpHeight: 0, jumpVelocity: 0, jumpCooldown: 0, grounded: true
 };
 
 const JUMP_FORCE = 6.5;
 const JUMP_GRAVITY = 18;
 const JUMP_COOLDOWN = 0.35;
 
-let yaw = 0;
-let pitch = 0;
-let locked = false;
-let gameStarted = false;
-let gameOver = false;
-let lastTime = 0;
-let bob = 0;
-
-let balls = [];
-let projectiles = [];
-let bots = [];
-
-let messageTimer = 0;
-let chargeStartedAt = null;
-let currentCharge = 0;
+let yaw = 0, pitch = 0, locked = false;
+let gameStarted = false, gameOver = false, lastTime = 0, bob = 0;
+let balls = [], projectiles = [], bots = [];
+let messageTimer = 0, chargeStartedAt = null, currentCharge = 0;
+let throwAnimation = null;
 const MAX_CHARGE_TIME = 1.5;
 
 const ballGeometry = new THREE.SphereGeometry(0.22, 20, 16);
-const ballMaterial = new THREE.MeshStandardMaterial({
-    color: 0xff8b25, roughness: 0.45
-});
-
+const ballMaterial = new THREE.MeshStandardMaterial({ color: 0xff8b25, roughness: 0.45 });
 const heldBallMesh = new THREE.Mesh(ballGeometry, ballMaterial);
 heldBallMesh.position.set(0.78, -0.55, -1.35);
 heldBallMesh.scale.setScalar(1.55);
@@ -345,29 +119,19 @@ heldBallMesh.renderOrder = 10;
 heldBallMesh.visible = false;
 camera.add(heldBallMesh);
 
-// ======================================
 // ILUMINAÇÃO
-// ======================================
-
 scene.add(new THREE.HemisphereLight(0xffffff, 0x39404c, 2));
-
 const mainLight = new THREE.DirectionalLight(0xffffff, 2);
 mainLight.position.set(-7, 14, 8);
 mainLight.castShadow = true;
 scene.add(mainLight);
 
-// ======================================
 // ARENA
-// ======================================
-
 function createArena() {
     const floor = new THREE.Mesh(
         new THREE.PlaneGeometry(arena.width, arena.depth),
-        new THREE.MeshStandardMaterial({
-            color: 0x263c4b, roughness: 0.85
-        })
+        new THREE.MeshStandardMaterial({ color: 0x263c4b, roughness: 0.85 })
     );
-
     floor.rotation.x = -Math.PI / 2;
     floor.receiveShadow = true;
     scene.add(floor);
@@ -378,8 +142,7 @@ function createArena() {
             new THREE.Vector3(x2, 0.025, z2)
         ];
         const geometry = new THREE.BufferGeometry().setFromPoints(points);
-        const material = new THREE.LineBasicMaterial({ color });
-        scene.add(new THREE.Line(geometry, material));
+        scene.add(new THREE.Line(geometry, new THREE.LineBasicMaterial({ color })));
     }
 
     line(-10, 0, 10, 0, 0xffffff);
@@ -389,14 +152,9 @@ function createArena() {
     line(10, -8, 10, 8);
     line(-12, 0, 12, 0, 0x42caff);
 
-    const wallMaterial = new THREE.MeshStandardMaterial({
-        color: 0x344b5d, roughness: 0.8
-    });
-
+    const wallMaterial = new THREE.MeshStandardMaterial({ color: 0x344b5d, roughness: 0.8 });
     function wall(x, y, z, w, h, d) {
-        const mesh = new THREE.Mesh(
-            new THREE.BoxGeometry(w, h, d), wallMaterial
-        );
+        const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), wallMaterial);
         mesh.position.set(x, y, z);
         mesh.castShadow = true;
         mesh.receiveShadow = true;
@@ -421,9 +179,7 @@ function createArena() {
 
     const ceiling = new THREE.Mesh(
         new THREE.PlaneGeometry(24, 18),
-        new THREE.MeshStandardMaterial({
-            color: 0x18232e, side: THREE.DoubleSide
-        })
+        new THREE.MeshStandardMaterial({ color: 0x18232e, side: THREE.DoubleSide })
     );
     ceiling.rotation.x = Math.PI / 2;
     ceiling.position.y = 6;
@@ -436,7 +192,6 @@ function createArena() {
         );
         lamp.position.set(0, 5.8, z);
         scene.add(lamp);
-
         const light = new THREE.PointLight(0x9adfff, 20, 15);
         light.position.set(0, 5, z);
         scene.add(light);
@@ -444,45 +199,39 @@ function createArena() {
 }
 createArena();
 
-// ======================================
 // CÂMERA
-// ======================================
-
 function updateCamera() {
     camera.position.set(
         player.x,
-        player.height +
-        player.jumpHeight +
-        (player.grounded ? Math.sin(bob) * 0.035 : 0),
+        player.height + player.jumpHeight + (player.grounded ? Math.sin(bob) * 0.035 : 0),
         player.z
     );
-
     camera.rotation.order = "YXZ";
     camera.rotation.y = yaw;
     camera.rotation.x = pitch;
 }
 
-// ======================================
 // BOLAS
-// ======================================
-
 function createBall(x, z) {
     const mesh = new THREE.Mesh(ballGeometry, ballMaterial.clone());
     mesh.position.set(x, 0.25, z);
     mesh.castShadow = true;
     scene.add(mesh);
-
     const ball = { mesh, x, z, active: true, thrown: false };
     balls.push(ball);
     return ball;
 }
 
 function spawnInitialBalls() {
-    createBall(-4, 0);
-    createBall(0, -1);
-    createBall(4, 0);
-    createBall(-3, 3);
-    createBall(3, -3);
+    // Três bolas para cada equipe, distribuídas de forma simétrica.
+    // Azul: lado do jogador (z positivo). Vermelho: lado adversário (z negativo).
+    createBall(-7, 2.5);
+    createBall(0, 1.5);
+    createBall(7, 2.5);
+
+    createBall(-7, -2.5);
+    createBall(0, -1.5);
+    createBall(7, -2.5);
 }
 
 function removeBall(ball) {
@@ -493,17 +242,12 @@ function removeBall(ball) {
 
 function pickupBall() {
     if (player.hasBall || !locked || gameOver) return;
-
     let closest = null;
     let closestDistance = 1.7;
 
     for (const ball of balls) {
         if (!ball.active || ball.thrown) continue;
-
-        const distance = Math.hypot(
-            ball.x - player.x, ball.z - player.z
-        );
-
+        const distance = Math.hypot(ball.x - player.x, ball.z - player.z);
         if (distance < closestDistance) {
             closestDistance = distance;
             closest = ball;
@@ -520,24 +264,14 @@ function pickupBall() {
     }
 }
 
-// ======================================
-// ADVERSÁRIOS
-// ======================================
-
-function createBot(x, z, index) {
+// PERSONAGENS DOS DOIS TIMES
+function createBot(x, z, index, team = "red") {
     const group = new THREE.Group();
+    const teamColor = team === "blue" ? 0x168fe0 : 0xd84a4a;
+    const bodyMaterial = new THREE.MeshStandardMaterial({ color: teamColor, roughness: 0.75 });
+    const darkMaterial = new THREE.MeshStandardMaterial({ color: 0x202b36 });
 
-    const bodyMaterial = new THREE.MeshStandardMaterial({
-        color: 0xd84a4a, roughness: 0.75
-    });
-    const darkMaterial = new THREE.MeshStandardMaterial({
-        color: 0x202b36
-    });
-
-    const body = new THREE.Mesh(
-        new THREE.CapsuleGeometry(0.38, 0.75, 4, 8),
-        bodyMaterial
-    );
+    const body = new THREE.Mesh(new THREE.CapsuleGeometry(0.38, 0.75, 4, 8), bodyMaterial);
     body.position.y = 1.05;
     body.castShadow = true;
     group.add(body);
@@ -549,16 +283,11 @@ function createBot(x, z, index) {
     head.position.y = 1.85;
     group.add(head);
 
-    const shirt = new THREE.Mesh(
-        new THREE.BoxGeometry(0.82, 0.45, 0.35), darkMaterial
-    );
+    const shirt = new THREE.Mesh(new THREE.BoxGeometry(0.82, 0.45, 0.35), darkMaterial);
     shirt.position.y = 1.15;
     group.add(shirt);
 
-    const leftArm = new THREE.Mesh(
-        new THREE.CapsuleGeometry(0.11, 0.48, 3, 6),
-        bodyMaterial
-    );
+    const leftArm = new THREE.Mesh(new THREE.CapsuleGeometry(0.11, 0.48, 3, 6), bodyMaterial);
     leftArm.position.set(-0.48, 1.15, 0);
     leftArm.rotation.z = -0.3;
     group.add(leftArm);
@@ -568,9 +297,13 @@ function createBot(x, z, index) {
     rightArm.rotation.z = 0.3;
     group.add(rightArm);
 
-    const legs = new THREE.Mesh(
-        new THREE.BoxGeometry(0.55, 0.7, 0.3), darkMaterial
-    );
+    const heldBallMesh = new THREE.Mesh(ballGeometry, ballMaterial.clone());
+    heldBallMesh.position.set(0.68, 1.2, 0.18);
+    heldBallMesh.visible = false;
+    heldBallMesh.castShadow = true;
+    group.add(heldBallMesh);
+
+    const legs = new THREE.Mesh(new THREE.BoxGeometry(0.55, 0.7, 0.3), darkMaterial);
     legs.position.y = 0.35;
     group.add(legs);
 
@@ -579,25 +312,95 @@ function createBot(x, z, index) {
 
     const bot = {
         group, x, z, alive: true, hasBall: false, health: 1,
+        heldBallMesh,
+        rightArm,
+        throwAnimation: null,
         throwCooldown: 2 + Math.random() * 2,
         catchCooldown: 0,
         moveSpeed: 2.2 + Math.random() * 0.7,
-        index
+        movementTimer: 0,
+        movementX: 0,
+        movementZ: 0,
+        movementMultiplier: 1,
+        index,
+        team
     };
-
     bots.push(bot);
     return bot;
 }
 
 function createBots() {
-    createBot(-5, -5, 1);
-    createBot(0, -6.5, 2);
-    createBot(5, -5, 3);
+    // Dois aliados azuis ao lado/à frente do jogador.
+    createBot(-4.2, 5.8, 1, "blue");
+    createBot(4.2, 5.8, 2, "blue");
+
+    // Três adversários vermelhos na outra metade da quadra.
+    createBot(-5, -5, 3, "red");
+    createBot(0, -6.5, 4, "red");
+    createBot(5, -5, 5, "red");
 }
 
-// ======================================
-// PROJÉTEIS
-// ======================================
+// PROJÉTEIS E ANIMAÇÃO DA BOLA — MOVIMENTO INSPIRADO EM UM QUARTERBACK
+function getHeldBallChargePose(charge) {
+    const pullback = Math.pow(THREE.MathUtils.clamp(charge, 0, 1), 1.5);
+    return {
+        position: new THREE.Vector3(
+            THREE.MathUtils.lerp(0.78, 0.50, pullback),
+            THREE.MathUtils.lerp(-0.55, 0.07, pullback),
+            THREE.MathUtils.lerp(-1.35, -0.97, pullback)
+        ),
+        rotation: new THREE.Euler(
+            pullback * 0.95,
+            pullback * 0.25,
+            -pullback * 0.22
+        )
+    };
+}
+
+function updateHeldBallAnimation(delta) {
+    if (!player.hasBall || !heldBallMesh.visible || throwAnimation) return;
+
+    const charge = chargeStartedAt !== null ? currentCharge : 0;
+    const pose = getHeldBallChargePose(charge);
+
+    heldBallMesh.position.x = THREE.MathUtils.damp(heldBallMesh.position.x, pose.position.x, 16, delta);
+    heldBallMesh.position.y = THREE.MathUtils.damp(heldBallMesh.position.y, pose.position.y, 16, delta);
+    heldBallMesh.position.z = THREE.MathUtils.damp(heldBallMesh.position.z, pose.position.z, 16, delta);
+    heldBallMesh.rotation.x = THREE.MathUtils.damp(heldBallMesh.rotation.x, pose.rotation.x, 14, delta);
+    heldBallMesh.rotation.y = THREE.MathUtils.damp(heldBallMesh.rotation.y, pose.rotation.y, 14, delta);
+    heldBallMesh.rotation.z = THREE.MathUtils.damp(heldBallMesh.rotation.z, pose.rotation.z, 14, delta);
+}
+
+function updateThrowAnimation(delta) {
+    if (!throwAnimation || !player.hasBall) return;
+
+    throwAnimation.elapsed += delta;
+    const progress = Math.min(throwAnimation.elapsed / throwAnimation.duration, 1);
+
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const arc = Math.sin(progress * Math.PI);
+
+    const start = throwAnimation.startPosition;
+    const startRotation = throwAnimation.startRotation;
+
+    heldBallMesh.position.set(
+        THREE.MathUtils.lerp(start.x, 0.08, eased) + arc * 0.07,
+        THREE.MathUtils.lerp(start.y, -0.13, eased) + arc * 0.08,
+        THREE.MathUtils.lerp(start.z, -1.78, eased)
+    );
+
+    heldBallMesh.rotation.set(
+        startRotation.x + progress * 5.2,
+        startRotation.y + progress * 1.7,
+        startRotation.z + progress * 0.9
+    );
+
+    if (progress >= 1) {
+        const chargeToThrow = throwAnimation.charge;
+        throwAnimation = null;
+        throwBall(chargeToThrow);
+    }
+}
 
 function throwBall(charge = 0) {
     if (!player.hasBall || !locked || gameOver) return;
@@ -605,13 +408,19 @@ function throwBall(charge = 0) {
     charge = THREE.MathUtils.clamp(charge, 0, 1);
     const throwSpeed = 18 + charge * 14;
 
-    player.hasBall = false;
+    camera.updateMatrixWorld(true);
+    heldBallMesh.updateWorldMatrix(true, false);
 
-    const direction = new THREE.Vector3();
-    camera.getWorldDirection(direction);
+    const start = new THREE.Vector3();
+    heldBallMesh.getWorldPosition(start);
 
-    const start = camera.position.clone()
-        .add(direction.clone().multiplyScalar(0.8));
+    const cameraPosition = new THREE.Vector3();
+    const cameraDirection = new THREE.Vector3();
+    camera.getWorldPosition(cameraPosition);
+    camera.getWorldDirection(cameraDirection);
+
+    const aimPoint = cameraPosition.add(cameraDirection.multiplyScalar(100));
+    const direction = aimPoint.sub(start).normalize();
 
     const mesh = new THREE.Mesh(ballGeometry, ballMaterial.clone());
     mesh.position.copy(start);
@@ -623,25 +432,48 @@ function throwBall(charge = 0) {
         position: start,
         previousPosition: start.clone(),
         velocity: direction.multiplyScalar(throwSpeed),
-        owner: "player",
+        owner: "blue",
         active: true
     });
 
+    player.hasBall = false;
     updateHUD();
 }
 
+// INÍCIO DA ANIMAÇÃO DE ARREMESSO DOS BOTS
 function botThrow(bot) {
-    if (!bot.alive) return;
+    if (!bot.alive || !bot.hasBall || bot.throwAnimation) return;
 
-    const start = new THREE.Vector3(bot.x, 1.45, bot.z);
+    bot.throwAnimation = {
+        elapsed: 0,
+        duration: 0.48,
+        released: false,
+        startPosition: bot.heldBallMesh.position.clone(),
+        startRotation: bot.rightArm.rotation.clone()
+    };
+}
 
-    const targetX = player.x + (Math.random() - 0.5) * 0.7;
-    const targetZ = player.z;
+// LANÇAMENTO REAL DA BOLA
+function releaseBotBall(bot) {
+    if (!bot.alive || !bot.hasBall) return;
 
+    bot.group.updateMatrixWorld(true);
+
+    const start = new THREE.Vector3();
+    bot.heldBallMesh.getWorldPosition(start);
+    bot.heldBallMesh.visible = false;
+
+    const target = getNearestOpponent(bot);
+    if (!target) {
+        bot.hasBall = false;
+        return;
+    }
+
+    const targetX = target.x + (Math.random() - 0.5) * 0.7;
+    const targetZ = target.z;
     const dx = targetX - start.x;
     const dz = targetZ - start.z;
     const horizontalDistance = Math.hypot(dx, dz);
-
     const horizontalSpeed = 16.5;
     const flightTime = Math.max(0.1, horizontalDistance / horizontalSpeed);
 
@@ -651,9 +483,7 @@ function botThrow(bot) {
         dz / (horizontalDistance || 1)
     );
 
-    const verticalSpeed =
-        (1.25 - start.y + 4.9 * flightTime * flightTime) / flightTime;
-
+    const verticalSpeed = (1.25 - start.y + 4.9 * flightTime * flightTime) / flightTime;
     const velocity = new THREE.Vector3(
         direction.x * horizontalSpeed,
         verticalSpeed,
@@ -662,6 +492,7 @@ function botThrow(bot) {
 
     const mesh = new THREE.Mesh(ballGeometry, ballMaterial.clone());
     mesh.position.copy(start);
+    mesh.castShadow = true;
     scene.add(mesh);
 
     projectiles.push({
@@ -669,7 +500,7 @@ function botThrow(bot) {
         position: start.clone(),
         previousPosition: start.clone(),
         velocity,
-        owner: "bot",
+        owner: bot.team,
         active: true
     });
 
@@ -677,23 +508,122 @@ function botThrow(bot) {
     bot.throwCooldown = 2.5 + Math.random() * 2;
 }
 
-// ======================================
+// ANIMAÇÃO DO BRAÇO E DA BOLA DOS BOTS
+function updateBotThrowAnimations(delta) {
+    for (const bot of bots) {
+        if (!bot.alive || !bot.throwAnimation) continue;
+
+        const animation = bot.throwAnimation;
+        animation.elapsed += delta;
+
+        const progress = Math.min(animation.elapsed / animation.duration, 1);
+        const start = animation.startPosition;
+        const originalArm = animation.startRotation;
+
+        if (progress < 0.38) {
+            // PREPARAÇÃO: levanta a bola e puxa o braço para trás.
+            const t = progress / 0.38;
+            const eased = t * t * (3 - 2 * t);
+
+            bot.heldBallMesh.position.set(
+                THREE.MathUtils.lerp(start.x, 0.58, eased),
+                THREE.MathUtils.lerp(start.y, 1.55, eased),
+                THREE.MathUtils.lerp(start.z, -0.22, eased)
+            );
+
+            bot.rightArm.rotation.x = THREE.MathUtils.lerp(originalArm.x, -0.85, eased);
+            bot.rightArm.rotation.z = THREE.MathUtils.lerp(originalArm.z, 0.85, eased);
+
+        } else if (progress < 0.68) {
+            // ARREMESSO: braço estica e a bola avança rapidamente.
+            const t = (progress - 0.38) / 0.30;
+            const eased = 1 - Math.pow(1 - t, 3);
+
+            bot.heldBallMesh.position.set(
+                THREE.MathUtils.lerp(0.58, 0.55, eased),
+                THREE.MathUtils.lerp(1.55, 1.22, eased),
+                THREE.MathUtils.lerp(-0.22, 0.78, eased)
+            );
+
+            bot.heldBallMesh.rotation.x += delta * 18;
+
+            bot.rightArm.rotation.x = THREE.MathUtils.lerp(-0.85, 0.95, eased);
+            bot.rightArm.rotation.z = THREE.MathUtils.lerp(0.85, -0.22, eased);
+
+            // A bola sai da mão no momento do movimento para a frente.
+            if (!animation.released && progress >= 0.62) {
+                animation.released = true;
+                releaseBotBall(bot);
+            }
+
+        } else {
+            // FINALIZAÇÃO: o braço acompanha o movimento e retorna.
+            const t = (progress - 0.68) / 0.32;
+            const eased = t * t * (3 - 2 * t);
+
+            bot.rightArm.rotation.x = THREE.MathUtils.lerp(0.95, originalArm.x, eased);
+            bot.rightArm.rotation.z = THREE.MathUtils.lerp(-0.22, originalArm.z, eased);
+
+            bot.heldBallMesh.position.set(0.68, 1.2, 0.18);
+        }
+
+        if (progress >= 1) {
+            bot.rightArm.rotation.copy(originalArm);
+            bot.heldBallMesh.position.set(0.68, 1.2, 0.18);
+            bot.heldBallMesh.rotation.set(0, 0, 0);
+            bot.throwAnimation = null;
+        }
+    }
+}
+
 // MOVIMENTAÇÃO DOS BOTS
-// ======================================
+const BOT_MIN_Z = -8.5;
+const BOT_MAX_Z = 8.5;
 
-const BOT_MIN_Z = -8;
-const BOT_MAX_Z = -0.8;
+function getBotBounds(bot) {
+    return bot.team === "blue"
+        ? { minZ: 0.8, maxZ: 8.5 }
+        : { minZ: -8.5, maxZ: -0.8 };
+}
 
-function moveBot(bot, dx, dz, delta) {
+function getNearestOpponent(bot) {
+    const targets = [];
+
+    if (bot.team === "red") {
+        if (player.alive && player.health > 0) {
+            targets.push({ x: player.x, z: player.z, type: "player" });
+        }
+        for (const ally of bots) {
+            if (ally.alive && ally.team === "blue") {
+                targets.push({ x: ally.x, z: ally.z, type: "bot", bot: ally });
+            }
+        }
+    } else {
+        for (const enemy of bots) {
+            if (enemy.alive && enemy.team === "red") {
+                targets.push({ x: enemy.x, z: enemy.z, type: "bot", bot: enemy });
+            }
+        }
+    }
+
+    targets.sort((a, b) =>
+        Math.hypot(a.x - bot.x, a.z - bot.z) -
+        Math.hypot(b.x - bot.x, b.z - bot.z)
+    );
+    return targets[0] || null;
+}
+
+function moveBot(bot, dx, dz, delta, speedMultiplier = 1) {
     const length = Math.hypot(dx, dz) || 1;
     dx /= length;
     dz /= length;
 
-    bot.x += dx * bot.moveSpeed * delta;
-    bot.z += dz * bot.moveSpeed * delta;
+    bot.x += dx * bot.moveSpeed * speedMultiplier * delta;
+    bot.z += dz * bot.moveSpeed * speedMultiplier * delta;
 
+    const bounds = getBotBounds(bot);
     bot.x = THREE.MathUtils.clamp(bot.x, -10.5, 10.5);
-    bot.z = THREE.MathUtils.clamp(bot.z, BOT_MIN_Z, BOT_MAX_Z);
+    bot.z = THREE.MathUtils.clamp(bot.z, bounds.minZ, bounds.maxZ);
 
     bot.group.position.set(bot.x, 0, bot.z);
 
@@ -703,9 +633,7 @@ function moveBot(bot, dx, dz, delta) {
 }
 
 function moveBotTowardPlayer(bot, delta) {
-    const angle = Math.atan2(
-        player.x - bot.x, player.z - bot.z
-    );
+    const angle = Math.atan2(player.x - bot.x, player.z - bot.z);
     moveBot(bot, Math.sin(angle), Math.cos(angle), delta);
 }
 
@@ -726,12 +654,71 @@ function moveBotAway(bot, delta) {
     );
 }
 
+// MOVIMENTO IMPREVISÍVEL DOS BOTS QUE ESTÃO COM A BOLA
+function moveBotWithBall(bot, delta, target, distanceToTarget) {
+    bot.movementTimer -= delta;
+
+    // Troca a direção de tempos em tempos para não ficar previsível.
+    if (bot.movementTimer <= 0) {
+        bot.movementTimer = 0.65 + Math.random() * 0.85;
+
+        const angleToPlayer = Math.atan2(
+            target.x - bot.x,
+            target.z - bot.z
+        );
+
+        let mode;
+
+        if (distanceToTarget < 5.5) {
+            mode = Math.random() < 0.72 ? "retreat" : "strafe";
+        } else if (distanceToTarget > 10) {
+            mode = Math.random() < 0.65 ? "advance" : "strafe";
+        } else {
+            const choices = ["strafe", "strafe", "advance", "retreat", "diagonal"];
+            mode = choices[Math.floor(Math.random() * choices.length)];
+        }
+
+        const side = Math.random() < 0.5 ? -1 : 1;
+
+        if (mode === "retreat") {
+            bot.movementX = -Math.sin(angleToPlayer) + Math.cos(angleToPlayer) * side * 0.35;
+            bot.movementZ = -Math.cos(angleToPlayer) - Math.sin(angleToPlayer) * side * 0.35;
+        } else if (mode === "advance") {
+            bot.movementX = Math.sin(angleToPlayer) + Math.cos(angleToPlayer) * side * 0.25;
+            bot.movementZ = Math.cos(angleToPlayer) - Math.sin(angleToPlayer) * side * 0.25;
+        } else if (mode === "strafe") {
+            bot.movementX = Math.cos(angleToPlayer) * side;
+            bot.movementZ = -Math.sin(angleToPlayer) * side;
+        } else {
+            bot.movementX = Math.sin(angleToPlayer) * 0.65 + Math.cos(angleToPlayer) * side * 0.75;
+            bot.movementZ = Math.cos(angleToPlayer) * 0.65 - Math.sin(angleToPlayer) * side * 0.75;
+        }
+
+        // Alguns deslocamentos são rápidos, outros mais cautelosos.
+        bot.movementMultiplier = Math.random() < 0.32
+            ? 1.45 + Math.random() * 0.2
+            : 0.9 + Math.random() * 0.25;
+    }
+
+    moveBot(
+        bot,
+        bot.movementX,
+        bot.movementZ,
+        delta,
+        bot.movementMultiplier
+    );
+}
+
 function getBotDodgeDirection(bot) {
     let bestThreat = null;
     let bestTime = Infinity;
 
     for (const projectile of projectiles) {
-        if (!projectile.active || projectile.owner !== "player") continue;
+        if (!projectile.active) continue;
+        const isOpponentProjectile = bot.team === "red"
+            ? projectile.owner === "blue"
+            : projectile.owner === "red";
+        if (!isOpponentProjectile) continue;
 
         const vx = projectile.velocity.x;
         const vz = projectile.velocity.z;
@@ -744,23 +731,16 @@ function getBotDodgeDirection(bot) {
 
         const time = THREE.MathUtils.clamp(
             (relativeX * vx + relativeZ * vz) / speedSquared,
-            0, 0.75
+            0,
+            0.75
         );
 
         const closestX = projectile.position.x + vx * time;
         const closestZ = projectile.position.z + vz * time;
-        const distance = Math.hypot(
-            bot.x - closestX, bot.z - closestZ
-        );
+        const distance = Math.hypot(bot.x - closestX, bot.z - closestZ);
+        const predictedY = projectile.position.y + projectile.velocity.y * time - 4.9 * time * time;
 
-        const predictedY =
-            projectile.position.y +
-            projectile.velocity.y * time -
-            4.9 * time * time;
-
-        if (distance > 1.7 || predictedY < 0.15 || predictedY > 2.4) {
-            continue;
-        }
+        if (distance > 1.7 || predictedY < 0.15 || predictedY > 2.4) continue;
 
         if (time < bestTime) {
             bestTime = time;
@@ -771,6 +751,7 @@ function getBotDodgeDirection(bot) {
     if (!bestThreat) return null;
 
     const speed = Math.hypot(bestThreat.vx, bestThreat.vz) || 1;
+
     let dodgeX = -bestThreat.vz / speed;
     let dodgeZ = bestThreat.vx / speed;
 
@@ -784,44 +765,30 @@ function getBotDodgeDirection(bot) {
     return { x: dodgeX * side, z: dodgeZ * side };
 }
 
-// ======================================
-// IA DOS BOTS
-// ======================================
-
+// IA DOS DOIS TIMES
 function updateBots(delta) {
     for (const bot of bots) {
         if (!bot.alive) continue;
 
         bot.catchCooldown = Math.max(0, bot.catchCooldown - delta);
-
-        const distanceToPlayer = Math.hypot(
-            player.x - bot.x, player.z - bot.z
-        );
+        const target = getNearestOpponent(bot);
+        const distanceToTarget = target
+            ? Math.hypot(target.x - bot.x, target.z - bot.z)
+            : 99;
 
         if (bot.hasBall) {
             bot.throwCooldown -= delta;
+            if (target) moveBotWithBall(bot, delta, target, distanceToTarget);
 
-            if (distanceToPlayer < 6) {
-                moveBotAway(bot, delta);
-            } else if (distanceToPlayer > 10) {
-                moveBotTowardPlayer(bot, delta);
-            }
-
-            if (bot.throwCooldown <= 0 && distanceToPlayer < 20) {
+            if (bot.throwCooldown <= 0 && target && distanceToTarget < 20 && !bot.throwAnimation) {
                 botThrow(bot);
             }
             continue;
         }
 
         const dodgeDirection = getBotDodgeDirection(bot);
-
         if (dodgeDirection) {
-            moveBot(bot, dodgeDirection.x, dodgeDirection.z, delta);
-            continue;
-        }
-
-        if (player.hasBall) {
-            moveBotAway(bot, delta);
+            moveBot(bot, dodgeDirection.x, dodgeDirection.z, delta, 1.25);
             continue;
         }
 
@@ -830,12 +797,12 @@ function updateBots(delta) {
 
         for (const ball of balls) {
             if (!ball.active || ball.thrown) continue;
-            if (ball.z > 0.5) continue;
 
-            const distance = Math.hypot(
-                ball.x - bot.x, ball.z - bot.z
-            );
+            // Cada time procura bolas no seu próprio lado ou perto da linha central.
+            const onOwnSide = bot.team === "blue" ? ball.z >= -0.5 : ball.z <= 0.5;
+            if (!onOwnSide) continue;
 
+            const distance = Math.hypot(ball.x - bot.x, ball.z - bot.z);
             if (distance < nearestDistance) {
                 nearestDistance = distance;
                 nearestBall = ball;
@@ -846,7 +813,9 @@ function updateBots(delta) {
             if (nearestDistance < 0.9) {
                 removeBall(nearestBall);
                 bot.hasBall = true;
+                bot.heldBallMesh.visible = true;
                 bot.throwCooldown = 1.2 + Math.random();
+                bot.movementTimer = 0;
             } else {
                 const angle = Math.atan2(
                     nearestBall.z - bot.z,
@@ -854,16 +823,15 @@ function updateBots(delta) {
                 );
                 moveBot(bot, Math.cos(angle), Math.sin(angle), delta);
             }
-        } else {
-            moveBotTowardPlayer(bot, delta);
+        } else if (target) {
+            // Sem bola disponível, aproxima-se do adversário para pressionar.
+            const angle = Math.atan2(target.x - bot.x, target.z - bot.z);
+            moveBot(bot, Math.sin(angle), Math.cos(angle), delta, 0.7);
         }
     }
 }
 
-// ======================================
 // SEPARAÇÃO ENTRE OS BOTS
-// ======================================
-
 function resolveBotCollisions() {
     const minimumDistance = 1.35;
 
@@ -898,11 +866,41 @@ function resolveBotCollisions() {
                 botB.x += normalX * overlap;
                 botB.z += normalZ * overlap;
 
+                const boundsA = getBotBounds(botA);
+                const boundsB = getBotBounds(botB);
                 botA.x = THREE.MathUtils.clamp(botA.x, -10.5, 10.5);
-                botA.z = THREE.MathUtils.clamp(botA.z, BOT_MIN_Z, BOT_MAX_Z);
+                botA.z = THREE.MathUtils.clamp(botA.z, boundsA.minZ, boundsA.maxZ);
                 botB.x = THREE.MathUtils.clamp(botB.x, -10.5, 10.5);
-                botB.z = THREE.MathUtils.clamp(botB.z, BOT_MIN_Z, BOT_MAX_Z);
+                botB.z = THREE.MathUtils.clamp(botB.z, boundsB.minZ, boundsB.maxZ);
             }
+        }
+    }
+
+    // Os aliados azuis também respeitam o espaço ocupado pelo jogador.
+    // O jogador é tratado como um obstáculo imóvel nesta etapa; assim os bots
+    // não conseguem atravessá-lo nem empurrá-lo de forma brusca.
+    const playerBotDistance = 1.05;
+    for (const bot of bots) {
+        if (!bot.alive || bot.team !== "blue") continue;
+
+        let dx = bot.x - player.x;
+        let dz = bot.z - player.z;
+        let distance = Math.hypot(dx, dz);
+
+        if (distance < playerBotDistance) {
+            if (distance < 0.0001) {
+                dx = bot.x < 0 ? -1 : 1;
+                dz = 0;
+                distance = 1;
+            }
+
+            const push = playerBotDistance - distance;
+            bot.x += (dx / distance) * push;
+            bot.z += (dz / distance) * push;
+
+            const bounds = getBotBounds(bot);
+            bot.x = THREE.MathUtils.clamp(bot.x, -10.5, 10.5);
+            bot.z = THREE.MathUtils.clamp(bot.z, bounds.minZ, bounds.maxZ);
         }
     }
 
@@ -912,15 +910,11 @@ function resolveBotCollisions() {
     }
 }
 
-// ======================================
 // FÍSICA DOS PROJÉTEIS
-// ======================================
-
 function settleProjectileAsBall(projectile) {
     if (!projectile.active) return;
 
     projectile.active = false;
-
     projectile.mesh.position.set(
         projectile.position.x,
         0.25,
@@ -944,9 +938,7 @@ function distancePointToSegment(point, start, end) {
     const segment = new THREE.Vector3().subVectors(end, start);
     const lengthSquared = segment.lengthSq();
 
-    if (lengthSquared === 0) {
-        return point.distanceTo(start);
-    }
+    if (lengthSquared === 0) return point.distanceTo(start);
 
     const t = THREE.MathUtils.clamp(
         new THREE.Vector3().subVectors(point, start).dot(segment) / lengthSquared,
@@ -963,14 +955,8 @@ function updateProjectiles(delta) {
         if (!projectile.active) continue;
 
         projectile.previousPosition.copy(projectile.position);
-
         projectile.velocity.y -= 9.8 * delta;
-
-        projectile.position.addScaledVector(
-            projectile.velocity,
-            delta
-        );
-
+        projectile.position.addScaledVector(projectile.velocity, delta);
         projectile.mesh.position.copy(projectile.position);
 
         if (projectile.position.y < 0.22) {
@@ -1002,28 +988,32 @@ function updateProjectiles(delta) {
 
         if (Math.abs(projectile.position.x) > 11.5) {
             projectile.position.x = THREE.MathUtils.clamp(
-                projectile.position.x, -11.5, 11.5
+                projectile.position.x,
+                -11.5,
+                11.5
             );
+
             projectile.velocity.x *= -0.7;
             projectile.mesh.position.x = projectile.position.x;
         }
 
         if (Math.abs(projectile.position.z) > 8.5) {
             projectile.position.z = THREE.MathUtils.clamp(
-                projectile.position.z, -8.5, 8.5
+                projectile.position.z,
+                -8.5,
+                8.5
             );
+
             projectile.velocity.z *= -0.7;
             projectile.mesh.position.z = projectile.position.z;
         }
 
-        if (projectile.owner === "player") {
+        if (projectile.owner === "blue") {
+            // Jogador e aliados só acertam adversários vermelhos.
             for (const bot of bots) {
-                if (!bot.alive) continue;
+                if (!bot.alive || bot.team !== "red") continue;
 
-                const botPosition = new THREE.Vector3(
-                    bot.x, 1.1, bot.z
-                );
-
+                const botPosition = new THREE.Vector3(bot.x, 1.1, bot.z);
                 const distance = distancePointToSegment(
                     botPosition,
                     projectile.previousPosition,
@@ -1037,24 +1027,48 @@ function updateProjectiles(delta) {
                     break;
                 }
             }
-        } else {
-            // NOVO: acompanha a altura do jogador durante o pulo.
-            const playerPosition = new THREE.Vector3(
-                player.x,
-                1.25 + player.jumpHeight,
-                player.z
-            );
+        } else if (projectile.owner === "red") {
+            // Adversários podem acertar o jogador ou qualquer aliado azul.
+            let hitSomething = false;
 
-            const distance = distancePointToSegment(
-                playerPosition,
-                projectile.previousPosition,
-                projectile.position
-            );
+            if (player.alive && player.health > 0) {
+                const playerPosition = new THREE.Vector3(
+                    player.x,
+                    1.25 + player.jumpHeight,
+                    player.z
+                );
+                const distance = distancePointToSegment(
+                    playerPosition,
+                    projectile.previousPosition,
+                    projectile.position
+                );
 
-            if (distance < 0.72) {
-                hitPlayer();
-                destroyProjectile(projectile);
+                if (distance < 0.72) {
+                    hitPlayer();
+                    hitSomething = true;
+                }
             }
+
+            if (!hitSomething) {
+                for (const ally of bots) {
+                    if (!ally.alive || ally.team !== "blue") continue;
+                    const allyPosition = new THREE.Vector3(ally.x, 1.1, ally.z);
+                    const distance = distancePointToSegment(
+                        allyPosition,
+                        projectile.previousPosition,
+                        projectile.position
+                    );
+
+                    if (distance < 0.78) {
+                        eliminateBot(ally);
+                        showMessage("ALIADO ELIMINADO!");
+                        hitSomething = true;
+                        break;
+                    }
+                }
+            }
+
+            if (hitSomething) destroyProjectile(projectile);
         }
 
         if (!projectile.active) continue;
@@ -1069,38 +1083,42 @@ function updateProjectiles(delta) {
     projectiles = projectiles.filter(p => p.active);
 }
 
-// ======================================
 // ELIMINAÇÕES
-// ======================================
-
 function eliminateBot(bot) {
+    if (!bot.alive) return;
     bot.alive = false;
+    bot.hasBall = false;
     scene.remove(bot.group);
-
     updateHUD();
 
-    if (bots.filter(b => b.alive).length === 0) {
+    const enemiesAlive = bots.some(b => b.alive && b.team === "red");
+    const alliesAlive = bots.some(b => b.alive && b.team === "blue");
+
+    if (!enemiesAlive) {
         finishGame(true);
+    } else if (!player.alive && !alliesAlive) {
+        finishGame(false);
     }
 }
 
 function hitPlayer() {
+    if (!player.alive || player.health <= 0) return;
+
     player.health--;
     updateHUD();
     showMessage("VOCÊ FOI ATINGIDO!");
 
     if (player.health <= 0) {
-        finishGame(false);
+        player.alive = false;
+        showMessage("VOCÊ FOI ELIMINADO! SEUS ALIADOS CONTINUAM!");
+        const alliesAlive = bots.some(b => b.alive && b.team === "blue");
+        if (!alliesAlive) finishGame(false);
     }
 }
 
-// ======================================
 // PULO DO JOGADOR
-// ======================================
-
 function jump() {
     if (!locked || gameOver || !gameStarted) return;
-
     if (!player.grounded || player.jumpCooldown > 0) return;
 
     player.grounded = false;
@@ -1109,19 +1127,13 @@ function jump() {
 }
 
 function updateJump(delta) {
-    player.jumpCooldown = Math.max(
-        0,
-        player.jumpCooldown - delta
-    );
+    player.jumpCooldown = Math.max(0, player.jumpCooldown - delta);
 
     if (player.grounded) return;
 
-    // Gravidade puxando o jogador para baixo.
     player.jumpVelocity -= JUMP_GRAVITY * delta;
-
     player.jumpHeight += player.jumpVelocity * delta;
 
-    // Chegou ao chão.
     if (player.jumpHeight <= 0) {
         player.jumpHeight = 0;
         player.jumpVelocity = 0;
@@ -1129,13 +1141,13 @@ function updateJump(delta) {
     }
 }
 
-// ======================================
 // MOVIMENTAÇÃO DO JOGADOR
-// ======================================
-
 function updatePlayer(delta) {
-    let forward = 0;
-    let side = 0;
+    if (!player.alive) {
+        updateCamera();
+        return;
+    }
+    let forward = 0, side = 0;
 
     if (keys["w"] || keys["W"]) forward += 1;
     if (keys["s"] || keys["S"]) forward -= 1;
@@ -1148,38 +1160,47 @@ function updatePlayer(delta) {
         forward /= length;
         side /= length;
 
-        const dx =
-            -Math.sin(yaw) * forward +
-            Math.cos(yaw) * side;
-
-        const dz =
-            -Math.cos(yaw) * forward -
-            Math.sin(yaw) * side;
-
+        const dx = -Math.sin(yaw) * forward + Math.cos(yaw) * side;
+        const dz = -Math.cos(yaw) * forward - Math.sin(yaw) * side;
         const speed = player.speed * delta;
-        const nextX = player.x + dx * speed;
-        const nextZ = player.z + dz * speed;
 
-        player.x = THREE.MathUtils.clamp(nextX, -10.7, 10.7);
-        player.z = THREE.MathUtils.clamp(nextZ, 0.8, 8);
+        const nextX = THREE.MathUtils.clamp(player.x + dx * speed, -10.7, 10.7);
+        const nextZ = THREE.MathUtils.clamp(player.z + dz * speed, 0.8, 8);
+        const collisionDistance = 1.05;
 
-        if (player.grounded) {
-            bob += delta * 10;
+        function overlapsBlueAlly(x, z) {
+            return bots.some(bot => {
+                if (!bot.alive || bot.team !== "blue") return false;
+                return Math.hypot(x - bot.x, z - bot.z) < collisionDistance;
+            });
         }
+
+        // Movimento separado por eixo: quando um aliado bloqueia o caminho,
+        // ainda é possível deslizar ao redor dele sem atravessá-lo.
+        let resolvedX = player.x;
+        let resolvedZ = player.z;
+
+        if (!overlapsBlueAlly(nextX, player.z)) {
+            resolvedX = nextX;
+        }
+        if (!overlapsBlueAlly(resolvedX, nextZ)) {
+            resolvedZ = nextZ;
+        }
+
+        player.x = resolvedX;
+        player.z = resolvedZ;
+
+        if (player.grounded) bob += delta * 10;
     }
 
-    // Atualiza a física vertical mesmo quando o jogador está parado.
     updateJump(delta);
-
     updateCamera();
 }
 
-// ======================================
 // INTERFACE
-// ======================================
-
 const healthUI = document.getElementById("health");
 const enemiesUI = document.getElementById("enemies");
+const teamCountUI = document.getElementById("teamCount");
 const ballCountUI = document.getElementById("ballCount");
 const hint = document.getElementById("hint");
 const messageUI = document.getElementById("message");
@@ -1191,9 +1212,9 @@ const menuDescription = document.getElementById("menuDescription");
 
 function updateHUD() {
     healthUI.textContent = player.health;
-    enemiesUI.textContent = bots.filter(bot => bot.alive).length;
+    enemiesUI.textContent = bots.filter(bot => bot.alive && bot.team === "red").length;
+    teamCountUI.textContent = bots.filter(bot => bot.alive && bot.team === "blue").length + (player.alive ? 1 : 0);
     ballCountUI.textContent = player.hasBall ? "1" : "0";
-
     heldBallMesh.visible = player.hasBall;
 
     if (!player.hasBall) {
@@ -1219,8 +1240,8 @@ function finishGame(won) {
     gameStarted = false;
 
     menuDescription.textContent = won
-        ? "VITÓRIA! Você eliminou todos os adversários."
-        : "FIM DE JOGO! Os adversários venceram.";
+        ? "VITÓRIA! Seu time eliminou todos os adversários."
+        : "FIM DE JOGO! Seu time foi eliminado.";
 
     startButton.textContent = "JOGAR NOVAMENTE";
     overlay.classList.remove("hidden");
@@ -1230,20 +1251,13 @@ function finishGame(won) {
     }
 }
 
-// ======================================
 // CONTROLES
-// ======================================
-
 document.addEventListener("keydown", event => {
     keys[event.key] = true;
 
-    // Evita que o Espaço role a página e impede pulos repetidos.
     if (event.code === "Space") {
         event.preventDefault();
-
-        if (!event.repeat) {
-            jump();
-        }
+        if (!event.repeat) jump();
     }
 
     if (event.key.toLowerCase() === "e") {
@@ -1275,14 +1289,25 @@ document.addEventListener("mouseup", event => {
     if (event.button !== 0 || chargeStartedAt === null) return;
 
     currentCharge = Math.min(
-        (performance.now() - chargeStartedAt) /
-        (MAX_CHARGE_TIME * 1000),
+        (performance.now() - chargeStartedAt) / (MAX_CHARGE_TIME * 1000),
         1
     );
 
+    const chargeToThrow = currentCharge;
     chargeStartedAt = null;
     chargeHud.style.opacity = 0;
-    throwBall(currentCharge);
+
+    const startPose = getHeldBallChargePose(chargeToThrow);
+    heldBallMesh.position.copy(startPose.position);
+    heldBallMesh.rotation.copy(startPose.rotation);
+
+    throwAnimation = {
+        elapsed: 0,
+        duration: 0.19 + chargeToThrow * 0.035,
+        charge: chargeToThrow,
+        startPosition: startPose.position.clone(),
+        startRotation: startPose.rotation.clone()
+    };
 
     currentCharge = 0;
     chargeFill.style.width = "0%";
@@ -1296,6 +1321,7 @@ document.addEventListener("pointerlockchange", () => {
         currentCharge = 0;
         chargeHud.style.opacity = 0;
         chargeFill.style.width = "0%";
+
         overlay.classList.remove("hidden");
         startButton.textContent = "CONTINUAR";
         menuDescription.textContent = "Partida pausada.";
@@ -1304,10 +1330,7 @@ document.addEventListener("pointerlockchange", () => {
     }
 });
 
-// ======================================
 // REINICIAR
-// ======================================
-
 function resetGame() {
     for (const ball of balls) scene.remove(ball.mesh);
     for (const projectile of projectiles) scene.remove(projectile.mesh);
@@ -1322,8 +1345,6 @@ function resetGame() {
     player.health = 3;
     player.hasBall = false;
     player.alive = true;
-
-    // Reinicia a física do pulo.
     player.jumpHeight = 0;
     player.jumpVelocity = 0;
     player.jumpCooldown = 0;
@@ -1331,6 +1352,11 @@ function resetGame() {
 
     chargeStartedAt = null;
     currentCharge = 0;
+    throwAnimation = null;
+
+    heldBallMesh.position.set(0.78, -0.55, -1.35);
+    heldBallMesh.rotation.set(0, 0, 0);
+
     chargeHud.style.opacity = 0;
     chargeFill.style.width = "0%";
 
@@ -1346,10 +1372,7 @@ function resetGame() {
     updateHUD();
 }
 
-// ======================================
 // INICIAR PARTIDA
-// ======================================
-
 startButton.addEventListener("click", () => {
     if (gameOver) resetGame();
 
@@ -1357,30 +1380,26 @@ startButton.addEventListener("click", () => {
     renderer.domElement.requestPointerLock();
 });
 
-// ======================================
 // LOOP PRINCIPAL
-// ======================================
-
 function animate(time) {
     requestAnimationFrame(animate);
 
-    const delta = Math.min(
-        (time - lastTime) / 1000 || 0,
-        0.04
-    );
+    const delta = Math.min((time - lastTime) / 1000 || 0, 0.04);
     lastTime = time;
 
     if (locked && gameStarted && !gameOver) {
         if (chargeStartedAt !== null) {
             currentCharge = Math.min(
-                (performance.now() - chargeStartedAt) /
-                (MAX_CHARGE_TIME * 1000),
+                (performance.now() - chargeStartedAt) / (MAX_CHARGE_TIME * 1000),
                 1
             );
 
             chargeFill.style.width = `${currentCharge * 100}%`;
         }
 
+        updateHeldBallAnimation(delta);
+        updateThrowAnimation(delta);
+        updateBotThrowAnimations(delta);
         updatePlayer(delta);
         updateBots(delta);
         resolveBotCollisions();
@@ -1388,7 +1407,10 @@ function animate(time) {
 
         if (messageTimer > 0) {
             messageTimer -= delta;
-            if (messageTimer <= 0) messageUI.style.opacity = 0;
+
+            if (messageTimer <= 0) {
+                messageUI.style.opacity = 0;
+            }
         }
     }
 
@@ -1398,10 +1420,7 @@ function animate(time) {
 resetGame();
 requestAnimationFrame(animate);
 
-// ======================================
 // REDIMENSIONAMENTO
-// ======================================
-
 window.addEventListener("resize", () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
